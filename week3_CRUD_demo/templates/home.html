@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Home Page</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 600px;
+                margin: 50px auto;
+                padding: 20px;
+            }
+            h1 {
+                color: #333;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Home Page</h1>
+        {% if email %}
+            <p>Hello, {{ email }}! You are already logged in</p>
+            <p>You can <a href="/editProfile">edit your profile</a> or <a href="/logout">Logout</a></p>
+        {% else %}
+            <p>You are not logged in. Please <a href="/login">login</a>.</p>
+        {% endif %}
+    </body>
+</html>
