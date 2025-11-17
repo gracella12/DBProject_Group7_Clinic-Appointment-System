@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Tambah Dokter Baru</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    form {
+      background: #f9f9f9;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    input[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Formulir Tambah Dokter</h1>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  {% for category, message in messages %}
+  <div style="color: red; margin-bottom: 15px;">{{ message }}</div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <form method="POST" action="{{ url_for('add_dokter') }}">
+
+    <label for="nama_depan">Nama Depan:</label>
+    <input type="text" id="nama_depan" name="nama_depan" required>
+
+    <label for="nama_belakang">Nama Belakang:</label>
+    <input type="text" id="nama_belakang" name="nama_belakang" required>
+
+    <label for="tanggal_masuk">Tanggal Masuk:</label>
+    <input type="date" id="tanggal_masuk" name="tanggal_masuk" required>
+
+    <label for="status">Status:</label>
+    <select id="status" name="status" required>
+      <option value="Aktif">Aktif</option>
+      <option value="Nonaktif">Nonaktif</option>
+    </select>
+
+    <input type="submit" value="Tambah Dokter">
+  </form>
+  <p style="text-align: center; margin-top: 15px;">
+    <a href="{{ url_for('display_dokter') }}">Batal dan Kembali ke Daftar</a>
+  </p>
+</body>
+
+</html>
