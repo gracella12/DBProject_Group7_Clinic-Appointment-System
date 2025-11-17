@@ -75,13 +75,12 @@ def editProfile():
         tanggal_lahir = request.form['tanggal_lahir']
         kota = request.form['kota']
         jalan = request.form['jalan']
-        telepon_list = request.form.getlist('telepon[]')  # Get all phone numbers
+        telepon_list = request.form.getlist('telepon[]') 
         email = session['email']
         
         try:
             cur = mysql.connection.cursor()
             
-            # Get pasien_id
             cur.execute('SELECT pasien_id FROM pasien WHERE email = %s', (email,))
             result = cur.fetchone()
             if not result:
@@ -90,7 +89,6 @@ def editProfile():
             
             pasien_id = result[0]
             
-            # Update pasien data
             cur.execute('''
                 UPDATE pasien 
                 SET nama_depan = %s, nama_belakang = %s, gender = %s, 
@@ -98,13 +96,11 @@ def editProfile():
                 WHERE email = %s
             ''', (nama_depan, nama_belakang, gender, tanggal_lahir, kota, jalan, email))
             
-            # Delete existing phone numbers
             cur.execute('DELETE FROM Pasien_telepon WHERE pasien_id = %s', (pasien_id,))
             
-            # Insert new phone numbers (filter out empty values)
             for telepon in telepon_list:
                 telepon = telepon.strip()
-                if telepon:  # Only insert non-empty phone numbers
+                if telepon:  
                     cur.execute('INSERT INTO Pasien_telepon (telepon, pasien_id) VALUES (%s, %s)', 
                                (telepon, pasien_id))
             
@@ -127,14 +123,27 @@ def deleteAccount():
     
     try:
         cur = mysql.connection.cursor()
-        cur.execute('DELETE FROM pasien WHERE pasien_id = (SELECT pasien_id FROM pasien WHERE email = %s)', (email,))
-        cur.execute('DELETE FROM pasien WHERE email = %s', (email,))
-        mysql.connection.commit()
-        cur.close()
+        
+        cur.execute('SELECT pasien_id FROM pasien WHERE email = %s', (email,))
+        result = cur.fetchone()
+        
+        if result:
+            pasien_id = result[0]
+            
+            cur.execute('DELETE FROM Pasien_telepon WHERE pasien_id = %s', (pasien_id,))
 
-        session.pop('email', None)
-        flash('Your account has been deleted successfully.', 'info')
+            cur.execute('DELETE FROM pasien WHERE pasien_id = %s', (pasien_id,))
+            
+            mysql.connection.commit()
+            
+            session.clear()
+            flash('Your account has been deleted successfully.', 'success')
+        else:
+            flash('Account not found.', 'error')
+        
+        cur.close()
         return redirect(url_for('home'))
+        
     except Exception as e:
         flash(f'Error deleting account: {str(e)}', 'error')
         return redirect(url_for('editProfile'))
