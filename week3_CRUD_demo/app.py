@@ -377,5 +377,121 @@ def delete_resepsionis(id):
         
     return redirect(url_for('display_resepsionis'))
 
+#Modul Jadwal Dokter
+@app.route('/jadwal/add', methods=['GET','POST'])
+def add_jadwal():
+    if request.method == 'POST':
+        dokter_id = request.form['dokter_id']
+        hari = request.form['hari']
+        jam_mulai = request.form['jam_mulai']
+        jam_selesai = request.form['jam_selesai']
+
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            INSERT INTO Jadwal_dokter (dokter_id, hari, jam_mulai, jam_selesai)
+            VALUES (%s, %s, %s, %s)
+        """, (dokter_id, hari, jam_mulai, jam_selesai))
+        mysql.connection.commit()
+        cur.close()
+
+        flash("Jadwal berhasil ditambahkan", "success")
+        return redirect(url_for('display_jadwal'))
+    
+    return render_template('addJadwal.html')
+
+@app.route('/jadwal')
+def display_jadwal():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM Jadwal_dokter")
+    data = cur.fetchall()
+    cur.close()
+    return render_template('displayJadwal.html', jadwal_list=data)
+
+@app.route('/jadwal/delete/<int:id>')
+def delete_jadwal(id):
+    cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM Jadwal_dokter WHERE jadwal_id = %s", (id,))
+    mysql.connection.commit()
+    cur.close()
+    flash("Jadwal berhasil dihapus", "success")
+    return redirect(url_for('display_jadwal'))
+
+#Modul appoinment
+@app.route('/appointment/book/<int:jadwal_id>')
+def book_appointment(jadwal_id):
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    email = session['email']
+
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT pasien_id FROM pasien WHERE email=%s", (email,))
+    pasien_id = cur.fetchone()[0]
+
+    # Ambil dokter_id dari jadwal
+    cur.execute("SELECT dokter_id, hari, jam_mulai FROM Jadwal_dokter WHERE jadwal_id=%s", (jadwal_id,))
+    dokter_id, hari, jam_mulai = cur.fetchone()
+
+    cur.execute("""
+        INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status)
+        VALUES (%s, %s, %s, CURDATE(), %s, 'booked')
+    """, (pasien_id, dokter_id, jadwal_id, jam_mulai))
+
+    mysql.connection.commit()
+    cur.close()
+
+    flash("Appointment berhasil dibuat!", "success")
+    return redirect(url_for('display_appointment'))
+
+@app.route('/appointment')
+def display_appointment():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM Appointment WHERE status='booked'")
+    data = cur.fetchall()
+    cur.close()
+    return render_template('displayAppointment.html', app_list=data)
+
+@app.route('/appointment/delete/<int:id>')
+def delete_appointment(id):
+    cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM Appointment WHERE appointment_id=%s", (id,))
+    mysql.connection.commit()
+    cur.close()
+
+    flash("Appointment dibatalkan.", "success")
+    return redirect(url_for('display_appointment'))
+
+#Modul Rekam medis
+@app.route('/rekam/add/<int:appointment_id>', methods=['GET','POST'])
+def add_rekam(appointment_id):
+    if request.method == 'POST':
+        diagnosis = request.form['diagnosis']
+        desc = request.form['description']
+
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            INSERT INTO Rekam_medis (appointment_id, diagnosis, description)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                diagnosis=%s,
+                description=%s
+        """, (appointment_id, diagnosis, desc, diagnosis, desc))
+
+        mysql.connection.commit()
+        cur.close()
+
+        flash("Rekam medis berhasil disimpan", "success")
+        return redirect(url_for('display_rekam'))
+
+    return render_template('addRekam.html', appointment_id=appointment_id)
+
+@app.route('/rekam')
+def display_rekam():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM Rekam_medis")
+    data = cur.fetchall()
+    cur.close()
+    return render_template('displayRekam.html', rekam_list=data)
+
 if __name__ == '__main__':
     app.run(debug=True)
