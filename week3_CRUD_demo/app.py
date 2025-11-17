@@ -149,7 +149,7 @@ def deleteAccount():
         return redirect(url_for('editProfile'))
         
 # Modul Dokter 
-@app.toure('/dokter/add', methods=['GET', 'POST'])
+@app.route('/dokter/add', methods=['GET', 'POST'])
 def add_dokter():
     if 'email' not in session:
         flash('Please login first.', 'error')
@@ -190,7 +190,7 @@ def display_dokter():
         cur.execute("SELECT dokter_id, nama_depan, nama_belakang, tanggal_masuk, status FROM Dokter")
         data_dokter = cur.fetchall()
         cur.close()
-        return render_template('displayDoctor.html', dokter_list=data_dokter)
+        return render_template('displayDokter.html', dokter_list=data_dokter)
     
     except Exception as e:
         flash(f'Error: {str(e)}', 'error')
@@ -232,6 +232,11 @@ def edit_dokter(id):
 
     cur.execute("SELECT nama_depan, nama_belakang, status FROM Dokter WHERE dokter_id = %s", (id,))
     dokter = cur.fetchone()
+    
+    if not dokter:
+        cur.close()
+        flash('Doctor not found!', 'error')
+        return redirect(url_for('display_dokter'))
     
     cur.execute("SELECT telepon FROM Dokter_telepon WHERE dokter_id = %s", (id,))
     telepon_dokter = cur.fetchall()
