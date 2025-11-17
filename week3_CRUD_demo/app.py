@@ -147,6 +147,230 @@ def deleteAccount():
     except Exception as e:
         flash(f'Error deleting account: {str(e)}', 'error')
         return redirect(url_for('editProfile'))
+        
+# Modul Dokter 
+@app.toure('/dokter/add', methods=['GET', 'POST'])
+def add_dokter():
+    if 'email' not in session:
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        nama_depan = request.form['nama_depan']
+        nama_belakang = request.form['nama_belakang']
+        tanggal_masuk = request.form['tanggal_masuk']
+        status = request.form['status']
+
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute(
+                "INSERT INTO Dokter (nama_depan, nama_belakang, tanggal_masuk, status) VALUES (%s, %s, %s, %s)",
+                (nama_depan, nama_belakang, tanggal_masuk, status)
+            )
+            mysql.connection.commit()
+            cur.close()
+
+            flash('New doctor is successfully added!', 'success')
+            return redirect(url_for('display_dokter'))
+        
+        except Exception as e:
+            flash(f'Error: {str(e)}', 'error')
+            return redirect(url_for('add_dokter'))
+
+    return render_template('addDokter.html')
+
+@app.route('/dokter')
+def display_dokter():
+    if 'email' not in session:
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+    
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT dokter_id, nama_depan, nama_belakang, tanggal_masuk, status FROM Dokter")
+        data_dokter = cur.fetchall()
+        cur.close()
+        return render_template('displayDoctor.html', dokter_list=data_dokter)
+    
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('home'))
+
+@app.route('/dokter/edit/<int:id>', methods=['GET', 'POST'])
+def edit_dokter(id):
+    if 'email' not in session:
+        return redirect(url_for('login'))
+    cur = mysql.connection.cursor()
+
+    if request.method == 'POST':
+       nama_depan = request.form['nama_depan']
+       nama_belakang = request.form['nama_belakang']
+       status = request.form['status']
+       telepon_list = request.form.getlist('telepon[]')
+       
+       try:
+           cur.execute(
+               "UPDATE Dokter SET nama_depan = %s, nama_belakang = %s, status = %s WHERE dokter_id = %s",
+                (nama_depan, nama_belakang, status, id)
+           )
+
+           cur.execute("DELETE FROM Dokter_telepon WHERE dokter_id = %s", (id,))
+           for telepon in telepon_list:
+                telepon = telepon.strip()
+                if telepon:
+                    cur.execute("INSERT INTO Dokter_telepon (telepon, dokter_id) VALUES (%s, %s)",
+                               (telepon, id))
+            
+           mysql.connection.commit()
+           cur.close()
+           flash('The doctor record is successfully updated!', 'success')
+           return redirect(url_for('display_dokter'))
+       
+       except Exception as e:
+            flash(f'Error: {str(e)}', 'error')
+            return redirect(url_for('edit_dokter', id=id)) 
+
+    cur.execute("SELECT nama_depan, nama_belakang, status FROM Dokter WHERE dokter_id = %s", (id,))
+    dokter = cur.fetchone()
+    
+    cur.execute("SELECT telepon FROM Dokter_telepon WHERE dokter_id = %s", (id,))
+    telepon_dokter = cur.fetchall()
+    
+    cur.close()
+    
+    return render_template('editDokter.html', dokter=dokter, telepon_list=telepon_dokter, dokter_id=id)
+
+@app.route('/dokter/delete/<int:id>')
+def delete_dokter(id):
+    if 'email' not in session: 
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+    
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("DELETE FROM Dokter WHERE dokter_id = %s", (id,))
+        
+        mysql.connection.commit()
+        cur.close()
+        
+        flash('Data dokter berhasil dihapus.', 'success')
+        
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        
+    return redirect(url_for('display_dokter'))
+
+# Modul Resepsionis
+@app.route('/resepsionis/add', methods=['GET', 'POST'])
+def add_resepsionis():
+    if 'email' not in session:
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        nama_depan = request.form['nama_depan']
+        nama_belakang = request.form['nama_belakang']
+        tanggal_masuk = request.form['tanggal_masuk']
+        status = request.form['status']
+
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute(
+                "INSERT INTO Resepsionis (nama_depan, nama_belakang, tanggal_masuk, status) VALUES (%s, %s, %s, %s)",
+                (nama_depan, nama_belakang, tanggal_masuk, status)
+            )
+            mysql.connection.commit()
+            cur.close()
+
+            flash('New receptionist is successfully added!', 'success')
+            return redirect(url_for('display_resepsionis'))
+        
+        except Exception as e:
+            flash(f'Error: {str(e)}', 'error')
+            return redirect(url_for('add_resepsionis'))
+
+    return render_template('addResepsionis.html')
+
+@app.route('/resepsionis')
+def display_resepsionis():
+    if 'email' not in session:
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+    
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT resepsionis_id, nama_depan, nama_belakang, tanggal_masuk, status FROM Resepsionis")
+        data_resepsionis = cur.fetchall()
+        cur.close()
+        return render_template('displayResepsionis.html', resepsionis_list=data_resepsionis)
+    
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('home'))
+    
+@app.route('/resepsionis/edit/<int:id>', methods=['GET', 'POST'])
+def edit_resepsionis(id):
+    if 'email' not in session:
+        return redirect(url_for('login'))
+    cur = mysql.connection.cursor()
+
+    if request.method == 'POST':
+       nama_depan = request.form['nama_depan']
+       nama_belakang = request.form['nama_belakang']
+       status = request.form['status']
+       telepon_list = request.form.getlist('telepon[]')
+       
+       try:
+           cur.execute(
+               "UPDATE Resepsionis SET nama_depan = %s, nama_belakang = %s, status = %s WHERE resepsionis_id = %s",
+                (nama_depan, nama_belakang, status, id)
+           )
+
+           cur.execute("DELETE FROM Resepsionis_telepon WHERE resepsionis_id = %s", (id,))
+           for telepon in telepon_list:
+                telepon = telepon.strip()
+                if telepon:
+                    cur.execute("INSERT INTO Resepsionis_telepon (telepon, resepsionis_id) VALUES (%s, %s)",
+                               (telepon, id))
+            
+           mysql.connection.commit()
+           cur.close()
+           flash('The receptionist record is successfully updated!', 'success')
+           return redirect(url_for('display_resepsionis'))
+       
+       except Exception as e:
+            flash(f'Error: {str(e)}', 'error')
+            return redirect(url_for('edit_resepsionis', id=id)) 
+
+    cur.execute("SELECT nama_depan, nama_belakang, status FROM Resepsionis WHERE resepsionis_id = %s", (id,))
+    resepsionis = cur.fetchone()
+    
+    cur.execute("SELECT telepon FROM Resepsionis_telepon WHERE resepsionis_id = %s", (id,))
+    telepon_resepsionis = cur.fetchall()
+    
+    cur.close()
+    
+    return render_template('editResepsionis.html', resepsionis=resepsionis, telepon_list=telepon_resepsionis, resepsionis_id=id)
+
+@app.route('/resepsionis/hapus/<int:id>')
+def delete_resepsionis(id):
+    if 'email' not in session: 
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+    
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("DELETE FROM Resepsionis WHERE resepsionis_id = %s", (id,))
+        
+        mysql.connection.commit()
+        cur.close()
+        
+        flash('Data resepsionis berhasil dihapus.', 'success')
+        
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        
+    return redirect(url_for('display_resepsionis'))
 
 if __name__ == '__main__':
     app.run(debug=True)
