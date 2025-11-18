@@ -378,26 +378,42 @@ def delete_resepsionis(id):
     return redirect(url_for('display_resepsionis'))
 
 #Modul Jadwal Dokter
-@app.route('/jadwal/add', methods=['GET','POST'])
+@app.route('/jadwal/add', methods=['GET', 'POST'])
 def add_jadwal():
+    cur = mysql.connection.cursor()
+
     if request.method == 'POST':
         dokter_id = request.form['dokter_id']
         hari = request.form['hari']
         jam_mulai = request.form['jam_mulai']
         jam_selesai = request.form['jam_selesai']
 
-        cur = mysql.connection.cursor()
         cur.execute("""
-            INSERT INTO Jadwal_dokter (dokter_id, hari, jam_mulai, jam_selesai)
-            VALUES (%s, %s, %s, %s)
-        """, (dokter_id, hari, jam_mulai, jam_selesai))
+            INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai)
+            VALUES (%s, %s, %s)
+        """, (hari, jam_mulai, jam_selesai))
+
+        cur.execute("SELECT LAST_INSERT_ID()")
+        jadwal_id = cur.fetchone()[0]
+
+        cur.execute("""
+            INSERT INTO Dijadwalkan (dokter_id, jadwal_id)
+            VALUES (%s, %s)
+        """, (dokter_id, jadwal_id))
+
         mysql.connection.commit()
         cur.close()
 
         flash("Jadwal berhasil ditambahkan", "success")
         return redirect(url_for('display_jadwal'))
-    
-    return render_template('addJadwal.html')
+
+    # GET → tampilkan daftar dokter
+    cur.execute("SELECT dokter_id, nama_depan FROM Dokter")
+    dokter_list = cur.fetchall()
+    cur.close()
+
+    return render_template('addJadwal.html', dokter_list=dokter_list)
+
 
 @app.route('/jadwal')
 def display_jadwal():
