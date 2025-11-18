@@ -380,40 +380,94 @@ def delete_resepsionis(id):
 #Modul Jadwal Dokter
 @app.route('/jadwal/add', methods=['GET','POST'])
 def add_jadwal():
+    if 'email' not in session:
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+    
     if request.method == 'POST':
         dokter_id = request.form['dokter_id']
         hari = request.form['hari']
         jam_mulai = request.form['jam_mulai']
         jam_selesai = request.form['jam_selesai']
 
-        cur = mysql.connection.cursor()
-        cur.execute("""
-            INSERT INTO Jadwal_dokter (dokter_id, hari, jam_mulai, jam_selesai)
-            VALUES (%s, %s, %s, %s)
-        """, (dokter_id, hari, jam_mulai, jam_selesai))
-        mysql.connection.commit()
-        cur.close()
+        try:
+            cur = mysql.connection.cursor()
+            # Insert ke Jadwal_dokter terlebih dahulu
+            cur.execute("""
+                INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai)
+                VALUES (%s, %s, %s)
+            """, (hari, jam_mulai, jam_selesai))
+            
+            # Ambil jadwal_id yang baru dibuat
+            jadwal_id = cur.lastrowid
+            
+            # Insert ke tabel Dijadwalkan untuk relasi dokter-jadwal
+            cur.execute("""
+                INSERT INTO Dijadwalkan (dokter_id, jadwal_id)
+                VALUES (%s, %s)
+            """, (dokter_id, jadwal_id))
+            
+            mysql.connection.commit()
+            cur.close()
 
-        flash("Jadwal berhasil ditambahkan", "success")
-        return redirect(url_for('display_jadwal'))
+            flash("Jadwal berhasil ditambahkan", "success")
+            return redirect(url_for('display_jadwal'))
+        
+        except Exception as e:
+            flash(f'Error: {str(e)}', 'error')
+            return redirect(url_for('add_jadwal'))
     
-    return render_template('addJadwal.html')
+    # GET request - ambil list dokter untuk dropdown
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT dokter_id, nama_depan, nama_belakang FROM Dokter WHERE status='Aktif'")
+        dokter_list = cur.fetchall()
+        cur.close()
+        return render_template('addJadwal.html', dokter_list=dokter_list)
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        return render_template('addJadwal.html', dokter_list=[])
 
 @app.route('/jadwal')
 def display_jadwal():
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM Jadwal_dokter")
-    data = cur.fetchall()
-    cur.close()
-    return render_template('displayJadwal.html', jadwal_list=data)
+    if 'email' not in session:
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+    
+    try:
+        cur = mysql.connection.cursor()
+        # JOIN untuk mendapatkan informasi dokter
+        cur.execute("""
+            SELECT j.jadwal_id, j.hari, j.jam_mulai, j.jam_selesai, 
+                   d.dokter_id, d.nama_depan, d.nama_belakang
+            FROM Jadwal_dokter j
+            JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
+            JOIN Dokter d ON dj.dokter_id = d.dokter_id
+            ORDER BY j.jadwal_id
+        """)
+        data = cur.fetchall()
+        cur.close()
+        return render_template('displayJadwal.html', jadwal_list=data)
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('home'))
 
 @app.route('/jadwal/delete/<int:id>')
 def delete_jadwal(id):
-    cur = mysql.connection.cursor()
-    cur.execute("DELETE FROM Jadwal_dokter WHERE jadwal_id = %s", (id,))
-    mysql.connection.commit()
-    cur.close()
-    flash("Jadwal berhasil dihapus", "success")
+    if 'email' not in session:
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+    
+    try:
+        cur = mysql.connection.cursor()
+        # CASCADE akan otomatis hapus di tabel Dijadwalkan
+        cur.execute("DELETE FROM Jadwal_dokter WHERE jadwal_id = %s", (id,))
+        mysql.connection.commit()
+        cur.close()
+        flash("Jadwal berhasil dihapus", "success")
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+    
     return redirect(url_for('display_jadwal'))
 
 #Modul appoinment
@@ -428,9 +482,21 @@ def book_appointment(jadwal_id):
     cur.execute("SELECT pasien_id FROM pasien WHERE email=%s", (email,))
     pasien_id = cur.fetchone()[0]
 
-    # Ambil dokter_id dari jadwal
-    cur.execute("SELECT dokter_id, hari, jam_mulai FROM Jadwal_dokter WHERE jadwal_id=%s", (jadwal_id,))
-    dokter_id, hari, jam_mulai = cur.fetchone()
+    # Ambil dokter_id dari tabel Dijadwalkan dan info jadwal
+    cur.execute("""
+        SELECT dj.dokter_id, j.hari, j.jam_mulai 
+        FROM Dijadwalkan dj
+        JOIN Jadwal_dokter j ON dj.jadwal_id = j.jadwal_id
+        WHERE j.jadwal_id=%s
+    """, (jadwal_id,))
+    result = cur.fetchone()
+    
+    if not result:
+        flash("Jadwal tidak ditemukan", "error")
+        cur.close()
+        return redirect(url_for('display_jadwal'))
+    
+    dokter_id, hari, jam_mulai = result
 
     cur.execute("""
         INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status)
