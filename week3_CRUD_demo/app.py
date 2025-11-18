@@ -406,8 +406,7 @@ def add_jadwal():
 
         flash("Jadwal berhasil ditambahkan", "success")
         return redirect(url_for('display_jadwal'))
-
-    # GET → tampilkan daftar dokter
+    
     cur.execute("SELECT dokter_id, nama_depan FROM Dokter")
     dokter_list = cur.fetchall()
     cur.close()
