@@ -443,8 +443,13 @@ def book_appointment(jadwal_id):
     cur.execute("SELECT pasien_id FROM pasien WHERE email=%s", (email,))
     pasien_id = cur.fetchone()[0]
 
-    # Ambil dokter_id dari jadwal
-    cur.execute("SELECT dokter_id, hari, jam_mulai FROM Jadwal_dokter WHERE jadwal_id=%s", (jadwal_id,))
+    cur.execute("""
+        SELECT d.dokter_id, j.hari, j.jam_mulai
+        FROM Dijadwalkan d
+        JOIN Jadwal_dokter j ON d.jadwal_id = j.jadwal_id
+        WHERE d.jadwal_id = %s
+    """, (jadwal_id,))
+    
     dokter_id, hari, jam_mulai = cur.fetchone()
 
     cur.execute("""
