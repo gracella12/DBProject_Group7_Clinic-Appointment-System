@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import pymysql
 pymysql.install_as_MySQLdb()
 from flask_mysqldb import MySQL
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key ='membuatLogin'
@@ -25,7 +26,7 @@ def home():
 def login():
     if request.method == 'POST':
         email = request.form['email']
-        pwd = request.form['password']
+        pwd = request.form['password'] 
         
         try:
             cur = mysql.connection.cursor()
@@ -33,12 +34,17 @@ def login():
             user = cur.fetchone()
             cur.close()
             
-            if user and pwd == user[1]:
-                session['email'] = user[0]
-                flash('Login successful!', 'success')
-                return redirect(url_for('home'))
+            if user:
+                stored_password_hash = user[1]
+                if check_password_hash(stored_password_hash, pwd):
+                    session['email'] = user[0]
+                    flash('Login successful!', 'success')
+                    return redirect(url_for('home'))
+                else:
+                    return render_template('login.html', error='Invalid email or password')
             else:
                 return render_template('login.html', error='Invalid email or password')
+                
         except Exception as e:
             return render_template('login.html', error=f'Database error: {str(e)}')
     
@@ -49,10 +55,14 @@ def register():
     if request.method == 'POST':
         email = request.form['email']
         pwd = request.form['password']
+        hashed_password = generate_password_hash(pwd, method='pbkdf2:sha256')
+        
         cur = mysql.connection.cursor()
-        cur.execute('insert into pasien (email, password) values (%s, %s)', (email, pwd))
+        cur.execute('insert into pasien (email, password) values (%s, %s)', (email, hashed_password))
         mysql.connection.commit()
         cur.close()
+        
+        flash('Registration successful! Please login.', 'success') # Opsional: feedback user
         return redirect(url_for('login'))
     
     return render_template('register.html')
