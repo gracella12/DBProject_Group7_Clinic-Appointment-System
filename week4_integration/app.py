@@ -3,6 +3,7 @@ import pymysql
 pymysql.install_as_MySQLdb()
 from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 app = Flask(__name__)
 app.secret_key ='membuatLogin'
@@ -11,7 +12,9 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'DBProject'
-app.config['MYSQL_UNIX_SOCKET'] = '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+# On Windows we should NOT set a UNIX socket path; use TCP connection instead.
+if os.name != 'nt':
+    app.config['MYSQL_UNIX_SOCKET'] = '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
 
 mysql = MySQL(app)
 
