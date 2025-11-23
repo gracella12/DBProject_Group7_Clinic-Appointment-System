@@ -1,3 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage Dokter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class = "bg-gray-50 min-h-screen p-6">
+    <header class="flex items-center gap-4 mb-8"
+        <img 
+            src="lobby.jpg"
+            class="w-16 h-16 rounded-full object-cover" alt="Profile Picture">
+        />
+
+        <div
+        <h1 class="text-2xl font-bold">Selamat Datang, Dokter {{nama}}!</h1>
+        </div>
+
+        <div class="ml-auto flex items-center gap-3">
+        <button class="px-3 py-2 bg-white border rounded shadow-sm text-sm">Profil</button>
+        <button class="px-3 py-2 bg-white border rounded shadow-sm text-sm">Logout</button>
+        </div>
+    </header>
+
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+
+      <div class="bg-white rounded-2xl p-5 shadow hover:shadow-md transition">
+        <div class="flex flex-col h-64">
+          <div class="flex items-start gap-3">
+            <div class="w-12 h-12 bg-indigo-100 rounded-lg text-indigo-600 font-bold flex items-center justify-center">D</div>
+            <div>
+              <h3 class="text-lg font-medium">Tambah Jadwal</h3>
+              <p class="text-sm text-gray-500">Buat slot praktik baru</p>
+            </div>
+          </div>
+          <div class="mt-auto pt-4">
+            <button class="px-4 py-2 bg-indigo-600 text-white rounded">Tambah</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-5 shadow hover:shadow-md transition">
+        <div class="flex flex-col h-full">
+          <div class="flex items-start gap-3">
+            <div class="w-12 h-12 bg-indigo-100 rounded-lg text-indigo-600 font-bold flex items-center justify-center">A</div>
+            <div>
+              <h3 class="text-lg font-medium">Lihat Appointment</h3>
+              <p class="text-sm text-gray-500">Daftar pasien yang sudah booking</p>
+            </div>
+          </div>
+          <div class="mt-auto pt-4">
+            <button class="px-4 py-2 bg-indigo-600 text-white rounded">Lihat</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-5 shadow hover:shadow-md transition">
+        <div class="flex flex-col h-full">
+          <div class="flex items-start gap-3">
+            <div class="w-12 h-12 bg-indigo-100 rounded-lg text-indigo-600 font-bold flex items-center justify-center">P</div>
+            <div>
+              <h3 class="text-lg font-medium">Pilih Pasien</h3>
+              <p class="text-sm text-gray-500">Lihat detail & rekam medis</p>
+            </div>
+          </div>
+          <div class="mt-auto pt-4">
+            <button class="px-4 py-2 bg-indigo-600 text-white rounded">Cari</button>
+          </div>
+        </div>
+      </div>
+    </section>
     
+</body>
