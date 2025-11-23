@@ -7,22 +7,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class = "bg-gray-50 min-h-screen p-6">
-    <header class="flex items-center gap-4 mb-8"
-        <img 
-            src="logobright.jpg"
-            class="w-16 h-16 rounded-full object-cover" alt="Profile Picture">
-        />
+<body class="bg-[#021024] min-h-screen p-6">
 
-        <div
-        <h1 class="text-2xl font-bold">Selamat Datang, Dokter {{nama}}!</h1>
-        </div>
+  <header class="flex items-center mb-10 bg-[#06203F] p-5 rounded-2xl shadow-lg">
 
-        <div class="ml-auto flex items-center gap-3">
-        <button class="px-3 py-2 bg-white border rounded shadow-sm text-sm">Profil</button>
-        <button class="px-3 py-2 bg-white border rounded shadow-sm text-sm">Logout</button>
-        </div>
-    </header>
+    <div class="ml-4">
+      <h1 class="text-[#C1E8FF] text-4xl sm:text-5xl font-extrabold tracking-tight drop-shadow">
+        Dokter Dashboard
+      </h1>
+      <p class="text-[#9BDDFF] text-lg sm:text-xl">
+        Selamat datang, Dokter <span class="font-semibold">{{ nama }}</span>!
+      </p>
+    </div>
+
+    <div class="ml-auto flex items-center gap-4">
+
+      <a href="{{ url_for('editProfile') }}"
+         class="px-4 py-2 bg-[#C1E8FF] text-[#001020] font-semibold rounded-lg shadow hover:bg-[#9BD9FF] transition-all duration-200">
+        Profil
+      </a>
+
+      <a href="{{ url_for('logout') }}"
+         class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow hover:bg-red-600 transition-all duration-200">
+        Logout
+      </a>
+
+    </div>
+
+  </header>
 
     <section class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
 
@@ -36,7 +48,7 @@
             </div>
           </div>
           <div class="mt-auto pt-4">
-            <button class="px-4 py-2 bg-indigo-600 text-white rounded">Tambah</button>
+            <a href="{{ url_for('add_jadwal') }}" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded">Tambah</a>
           </div>
         </div>
       </div>
@@ -51,7 +63,7 @@
             </div>
           </div>
           <div class="mt-auto pt-4">
-            <button class="px-4 py-2 bg-indigo-600 text-white rounded">Lihat</button>
+            <a href="{{ url_for('display_appointment') }}" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded">Lihat</a>
           </div>
         </div>
       </div>
@@ -66,10 +78,11 @@
             </div>
           </div>
           <div class="mt-auto pt-4">
-            <button class="px-4 py-2 bg-indigo-600 text-white rounded">Cari</button>
+            <a href="{{ url_for('display_rekam') }}" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded">Cari</a>
           </div>
         </div>
       </div>
     </section>
     
 </body>
+</html>
