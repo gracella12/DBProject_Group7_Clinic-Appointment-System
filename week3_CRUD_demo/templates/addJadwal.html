@@ -1,127 +1,116 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Tambah Jadwal Dokter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        form {
-            margin-top: 20px;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            color: #555;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="time"], select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .back-link {
-            display: inline-block;
-            margin-top: 15px;
-            color: #2196F3;
-            text-decoration: none;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        .flash-message {
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        .flash-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .flash-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-    </style>
+  <title>Tambah Jadwal Dokter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+
+    form {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+
+    select,
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      text-decoration: none;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 15px;
+      display: inline-block;
+    }
+
+    .btn-submit {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .btn-submit:hover {
+      background-color: #45a049;
+    }
+
+    .btn-back {
+      background-color: #2196F3;
+      color: white;
+      margin-left: 5px;
+    }
+
+    .btn-back:hover {
+      background-color: #1976D2;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Tambah Jadwal Dokter</h1>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
 
-        <form method="POST" action="{{ url_for('add_jadwal') }}">
-            <label for="dokter_id">Pilih Dokter:</label>
-            <select name="dokter_id" id="dokter_id" required>
-                <option value="">-- Pilih Dokter --</option>
-                {% for dokter in dokter_list %}
-                    <option value="{{ dokter[0] }}">{{ dokter[1] }} {{ dokter[2] }}</option>
-                {% endfor %}
-            </select>
+  <h1>Tambah Jadwal Dokter</h1>
 
-            <label for="hari">Hari:</label>
-            <select name="hari" id="hari" required>
-                <option value="">-- Pilih Hari --</option>
-                <option value="Senin">Senin</option>
-                <option value="Selasa">Selasa</option>
-                <option value="Rabu">Rabu</option>
-                <option value="Kamis">Kamis</option>
-                <option value="Jumat">Jumat</option>
-                <option value="Sabtu">Sabtu</option>
-                <option value="Minggu">Minggu</option>
-            </select>
+  <form method="POST">
 
-            <label for="jam_mulai">Jam Mulai:</label>
-            <input type="time" name="jam_mulai" id="jam_mulai" required>
+    <!-- Dokter -->
+    <label for="dokter_id">Pilih Dokter</label>
+    <select name="dokter_id" required>
+      <option value="" disabled selected>-- Pilih Dokter --</option>
+      {% for d in dokter_list %}
+      <option value="{{ d[0] }}">{{ d[1] }} (ID: {{ d[0] }})</option>
+      {% endfor %}
+    </select>
 
-            <label for="jam_selesai">Jam Selesai:</label>
-            <input type="time" name="jam_selesai" id="jam_selesai" required>
+    <!-- Hari -->
+    <label for="hari">Hari</label>
+    <select name="hari" required>
+      <option value="" disabled selected>-- Pilih Hari --</option>
+      <option>Senin</option>
+      <option>Selasa</option>
+      <option>Rabu</option>
+      <option>Kamis</option>
+      <option>Jumat</option>
+      <option>Sabtu</option>
+      <option>Minggu</option>
+    </select>
 
-            <button type="submit">Tambah Jadwal</button>
-        </form>
+    <!-- Jam Mulai -->
+    <label for="jam_mulai">Jam Mulai</label>
+    <input type="time" name="jam_mulai" required>
 
-        <a href="{{ url_for('display_jadwal') }}" class="back-link">← Kembali ke Daftar Jadwal</a>
-        <br>
-        <a href="{{ url_for('home') }}" class="back-link">← Kembali ke Home</a>
-    </div>
+    <!-- Jam Selesai -->
+    <label for="jam_selesai">Jam Selesai</label>
+    <input type="time" name="jam_selesai" required>
+
+    <button type="submit" class="btn btn-submit">Simpan Jadwal</button>
+    <a href="{{ url_for('display_jadwal') }}" class="btn btn-back">Kembali</a>
+
+  </form>
+
 </body>
+
 </html>
