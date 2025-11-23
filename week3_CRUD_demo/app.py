@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import pymysql
 pymysql.install_as_MySQLdb()
 from flask_mysqldb import MySQL
-from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key ='membuatLogin'
@@ -26,7 +25,7 @@ def home():
 def login():
     if request.method == 'POST':
         email = request.form['email']
-        pwd = request.form['password'] 
+        pwd = request.form['password']
         
         try:
             cur = mysql.connection.cursor()
@@ -34,17 +33,12 @@ def login():
             user = cur.fetchone()
             cur.close()
             
-            if user:
-                stored_password_hash = user[1]
-                if check_password_hash(stored_password_hash, pwd):
-                    session['email'] = user[0]
-                    flash('Login successful!', 'success')
-                    return redirect(url_for('home'))
-                else:
-                    return render_template('login.html', error='Invalid email or password')
+            if user and pwd == user[1]:
+                session['email'] = user[0]
+                flash('Login successful!', 'success')
+                return redirect(url_for('home'))
             else:
                 return render_template('login.html', error='Invalid email or password')
-                
         except Exception as e:
             return render_template('login.html', error=f'Database error: {str(e)}')
     
@@ -55,14 +49,10 @@ def register():
     if request.method == 'POST':
         email = request.form['email']
         pwd = request.form['password']
-        hashed_password = generate_password_hash(pwd, method='pbkdf2:sha256')
-        
         cur = mysql.connection.cursor()
-        cur.execute('insert into pasien (email, password) values (%s, %s)', (email, hashed_password))
+        cur.execute('insert into pasien (email, password) values (%s, %s)', (email, pwd))
         mysql.connection.commit()
         cur.close()
-        
-        flash('Registration successful! Please login.', 'success') # Opsional: feedback user
         return redirect(url_for('login'))
     
     return render_template('register.html')
@@ -159,51 +149,35 @@ def deleteAccount():
         return redirect(url_for('editProfile'))
         
 # Modul Dokter 
-@app.route('/jadwal/add', methods=['GET', 'POST'])
-def add_jadwal():
-    # Buat cursor hanya ketika dibutuhkan dan tangani exception
+@app.route('/dokter/add', methods=['GET', 'POST'])
+def add_dokter():
+    if 'email' not in session:
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+    
     if request.method == 'POST':
-        dokter_id = request.form['dokter_id']
-        hari = request.form['hari']
-        jam_mulai = request.form['jam_mulai']
-        jam_selesai = request.form['jam_selesai']
+        nama_depan = request.form['nama_depan']
+        nama_belakang = request.form['nama_belakang']
+        tanggal_masuk = request.form['tanggal_masuk']
+        status = request.form['status']
 
-        cur = mysql.connection.cursor()
         try:
+            cur = mysql.connection.cursor()
             cur.execute(
-                "INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai) VALUES (%s, %s, %s)",
-                (hari, jam_mulai, jam_selesai)
+                "INSERT INTO Dokter (nama_depan, nama_belakang, tanggal_masuk, status) VALUES (%s, %s, %s, %s)",
+                (nama_depan, nama_belakang, tanggal_masuk, status)
             )
-
-            # Gunakan lastrowid dari cursor untuk mendapatkan id baris yang baru dimasukkan
-            jadwal_id = cur.lastrowid
-
-            cur.execute(
-                "INSERT INTO Dijadwalkan (dokter_id, jadwal_id) VALUES (%s, %s)",
-                (dokter_id, jadwal_id)
-            )
-
             mysql.connection.commit()
-            flash("Jadwal berhasil ditambahkan", "success")
-            return redirect(url_for('display_jadwal'))
+            cur.close()
 
+            flash('New doctor is successfully added!', 'success')
+            return redirect(url_for('display_dokter'))
+        
         except Exception as e:
-            mysql.connection.rollback()
-            flash(f'Error menambahkan jadwal: {str(e)}', 'error')
-            return redirect(url_for('add_jadwal'))
+            flash(f'Error: {str(e)}', 'error')
+            return redirect(url_for('add_dokter'))
 
-        finally:
-            try:
-                cur.close()
-            except:
-                pass
-
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT dokter_id, nama_depan FROM Dokter")
-    dokter_list = cur.fetchall()
-    cur.close()
-
-    return render_template('addJadwal.html', dokter_list=dokter_list)
+    return render_template('addDokter.html')
 
 @app.route('/dokter')
 def display_dokter():
@@ -404,35 +378,46 @@ def delete_resepsionis(id):
     return redirect(url_for('display_resepsionis'))
 
 #Modul Jadwal Dokter
-@app.route('/jadwal/add', methods=['GET','POST'])
+@app.route('/jadwal/add', methods=['GET', 'POST'])
 def add_jadwal():
-    cur = mysql.connection.cursor()
-
+    # Buat cursor hanya ketika dibutuhkan dan tangani exception
     if request.method == 'POST':
         dokter_id = request.form['dokter_id']
         hari = request.form['hari']
         jam_mulai = request.form['jam_mulai']
         jam_selesai = request.form['jam_selesai']
 
-        cur.execute("""
-            INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai)
-            VALUES (%s, %s, %s)
-        """, (hari, jam_mulai, jam_selesai))
+        cur = mysql.connection.cursor()
+        try:
+            cur.execute(
+                "INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai) VALUES (%s, %s, %s)",
+                (hari, jam_mulai, jam_selesai)
+            )
 
-        cur.execute("SELECT LAST_INSERT_ID()")
-        jadwal_id = cur.fetchone()[0]
+            # Gunakan lastrowid dari cursor untuk mendapatkan id baris yang baru dimasukkan
+            jadwal_id = cur.lastrowid
 
-        cur.execute("""
-            INSERT INTO Dijadwalkan (dokter_id, jadwal_id)
-            VALUES (%s, %s)
-        """, (dokter_id, jadwal_id))
+            cur.execute(
+                "INSERT INTO Dijadwalkan (dokter_id, jadwal_id) VALUES (%s, %s)",
+                (dokter_id, jadwal_id)
+            )
 
-        mysql.connection.commit()
-        cur.close()
+            mysql.connection.commit()
+            flash("Jadwal berhasil ditambahkan", "success")
+            return redirect(url_for('display_jadwal'))
 
-        flash("Jadwal berhasil ditambahkan", "success")
-        return redirect(url_for('display_jadwal'))
-    
+        except Exception as e:
+            mysql.connection.rollback()
+            flash(f'Error menambahkan jadwal: {str(e)}', 'error')
+            return redirect(url_for('add_jadwal'))
+
+        finally:
+            try:
+                cur.close()
+            except:
+                pass
+
+    cur = mysql.connection.cursor()
     cur.execute("SELECT dokter_id, nama_depan FROM Dokter")
     dokter_list = cur.fetchall()
     cur.close()
@@ -441,44 +426,19 @@ def add_jadwal():
 
 @app.route('/jadwal')
 def display_jadwal():
-    if 'email' not in session:
-        flash('Please login first.', 'error')
-        return redirect(url_for('login'))
-    
-    try:
-        cur = mysql.connection.cursor()
-        # JOIN untuk mendapatkan informasi dokter
-        cur.execute("""
-            SELECT j.jadwal_id, j.hari, j.jam_mulai, j.jam_selesai, 
-                   d.dokter_id, d.nama_depan, d.nama_belakang
-            FROM Jadwal_dokter j
-            JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
-            JOIN Dokter d ON dj.dokter_id = d.dokter_id
-            ORDER BY j.jadwal_id
-        """)
-        data = cur.fetchall()
-        cur.close()
-        return render_template('displayJadwal.html', jadwal_list=data)
-    except Exception as e:
-        flash(f'Error: {str(e)}', 'error')
-        return redirect(url_for('home'))
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM Jadwal_dokter")
+    data = cur.fetchall()
+    cur.close()
+    return render_template('displayJadwal.html', jadwal_list=data)
 
 @app.route('/jadwal/delete/<int:id>')
 def delete_jadwal(id):
-    if 'email' not in session:
-        flash('Please login first.', 'error')
-        return redirect(url_for('login'))
-    
-    try:
-        cur = mysql.connection.cursor()
-        # CASCADE akan otomatis hapus di tabel Dijadwalkan
-        cur.execute("DELETE FROM Jadwal_dokter WHERE jadwal_id = %s", (id,))
-        mysql.connection.commit()
-        cur.close()
-        flash("Jadwal berhasil dihapus", "success")
-    except Exception as e:
-        flash(f'Error: {str(e)}', 'error')
-    
+    cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM Jadwal_dokter WHERE jadwal_id = %s", (id,))
+    mysql.connection.commit()
+    cur.close()
+    flash("Jadwal berhasil dihapus", "success")
     return redirect(url_for('display_jadwal'))
 
 #Modul appoinment
@@ -493,7 +453,6 @@ def book_appointment(jadwal_id):
     cur.execute("SELECT pasien_id FROM pasien WHERE email=%s", (email,))
     pasien_id = cur.fetchone()[0]
 
-
     cur.execute("""
         SELECT d.dokter_id, j.hari, j.jam_mulai
         FROM Dijadwalkan d
@@ -502,7 +461,6 @@ def book_appointment(jadwal_id):
     """, (jadwal_id,))
     
     dokter_id, hari, jam_mulai = cur.fetchone()
-
 
     cur.execute("""
         INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status)
