@@ -12,7 +12,7 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'DBProject'
-# On Windows we should NOT set a UNIX socket path; use TCP connection instead.
+
 if os.name != 'nt':
     app.config['MYSQL_UNIX_SOCKET'] = '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
 
@@ -184,8 +184,7 @@ def deleteAccount():
         
 # Modul Dokter 
 @app.route('/jadwal/add', methods=['GET', 'POST'])
-def add_jadwal():
-    # Buat cursor hanya ketika dibutuhkan dan tangani exception
+def add_jadwal_dokter():
     if request.method == 'POST':
         dokter_id = request.form['dokter_id']
         hari = request.form['hari']
@@ -199,7 +198,6 @@ def add_jadwal():
                 (hari, jam_mulai, jam_selesai)
             )
 
-            # Gunakan lastrowid dari cursor untuk mendapatkan id baris yang baru dimasukkan
             jadwal_id = cur.lastrowid
 
             cur.execute(
@@ -227,7 +225,7 @@ def add_jadwal():
     dokter_list = cur.fetchall()
     cur.close()
 
-    return render_template('addJadwal.html', dokter_list=dokter_list)
+    return render_template('addJadwalDokter.html', dokter_list=dokter_list)
 
 @app.route('/dokter')
 def display_dokter():
