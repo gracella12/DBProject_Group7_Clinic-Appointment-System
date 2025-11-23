@@ -159,35 +159,51 @@ def deleteAccount():
         return redirect(url_for('editProfile'))
         
 # Modul Dokter 
-@app.route('/dokter/add', methods=['GET', 'POST'])
-def add_dokter():
-    if 'email' not in session:
-        flash('Please login first.', 'error')
-        return redirect(url_for('login'))
-    
+@app.route('/jadwal/add', methods=['GET', 'POST'])
+def add_jadwal():
+    # Buat cursor hanya ketika dibutuhkan dan tangani exception
     if request.method == 'POST':
-        nama_depan = request.form['nama_depan']
-        nama_belakang = request.form['nama_belakang']
-        tanggal_masuk = request.form['tanggal_masuk']
-        status = request.form['status']
+        dokter_id = request.form['dokter_id']
+        hari = request.form['hari']
+        jam_mulai = request.form['jam_mulai']
+        jam_selesai = request.form['jam_selesai']
 
+        cur = mysql.connection.cursor()
         try:
-            cur = mysql.connection.cursor()
             cur.execute(
-                "INSERT INTO Dokter (nama_depan, nama_belakang, tanggal_masuk, status) VALUES (%s, %s, %s, %s)",
-                (nama_depan, nama_belakang, tanggal_masuk, status)
+                "INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai) VALUES (%s, %s, %s)",
+                (hari, jam_mulai, jam_selesai)
             )
+
+            # Gunakan lastrowid dari cursor untuk mendapatkan id baris yang baru dimasukkan
+            jadwal_id = cur.lastrowid
+
+            cur.execute(
+                "INSERT INTO Dijadwalkan (dokter_id, jadwal_id) VALUES (%s, %s)",
+                (dokter_id, jadwal_id)
+            )
+
             mysql.connection.commit()
-            cur.close()
+            flash("Jadwal berhasil ditambahkan", "success")
+            return redirect(url_for('display_jadwal'))
 
-            flash('New doctor is successfully added!', 'success')
-            return redirect(url_for('display_dokter'))
-        
         except Exception as e:
-            flash(f'Error: {str(e)}', 'error')
-            return redirect(url_for('add_dokter'))
+            mysql.connection.rollback()
+            flash(f'Error menambahkan jadwal: {str(e)}', 'error')
+            return redirect(url_for('add_jadwal'))
 
-    return render_template('addDokter.html')
+        finally:
+            try:
+                cur.close()
+            except:
+                pass
+
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT dokter_id, nama_depan FROM Dokter")
+    dokter_list = cur.fetchall()
+    cur.close()
+
+    return render_template('addJadwal.html', dokter_list=dokter_list)
 
 @app.route('/dokter')
 def display_dokter():
