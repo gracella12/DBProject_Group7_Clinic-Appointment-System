@@ -380,39 +380,49 @@ def delete_resepsionis(id):
 #Modul Jadwal Dokter
 @app.route('/jadwal/add', methods=['GET', 'POST'])
 def add_jadwal():
-    cur = mysql.connection.cursor()
-
+    # Buat cursor hanya ketika dibutuhkan dan tangani exception
     if request.method == 'POST':
         dokter_id = request.form['dokter_id']
         hari = request.form['hari']
         jam_mulai = request.form['jam_mulai']
         jam_selesai = request.form['jam_selesai']
 
-        cur.execute("""
-            INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai)
-            VALUES (%s, %s, %s)
-        """, (hari, jam_mulai, jam_selesai))
+        cur = mysql.connection.cursor()
+        try:
+            cur.execute(
+                "INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai) VALUES (%s, %s, %s)",
+                (hari, jam_mulai, jam_selesai)
+            )
 
-        cur.execute("SELECT LAST_INSERT_ID()")
-        jadwal_id = cur.fetchone()[0]
+            # Gunakan lastrowid dari cursor untuk mendapatkan id baris yang baru dimasukkan
+            jadwal_id = cur.lastrowid
 
-        cur.execute("""
-            INSERT INTO Dijadwalkan (dokter_id, jadwal_id)
-            VALUES (%s, %s)
-        """, (dokter_id, jadwal_id))
+            cur.execute(
+                "INSERT INTO Dijadwalkan (dokter_id, jadwal_id) VALUES (%s, %s)",
+                (dokter_id, jadwal_id)
+            )
 
-        mysql.connection.commit()
-        cur.close()
+            mysql.connection.commit()
+            flash("Jadwal berhasil ditambahkan", "success")
+            return redirect(url_for('display_jadwal'))
 
-        flash("Jadwal berhasil ditambahkan", "success")
-        return redirect(url_for('display_jadwal'))
-    
+        except Exception as e:
+            mysql.connection.rollback()
+            flash(f'Error menambahkan jadwal: {str(e)}', 'error')
+            return redirect(url_for('add_jadwal'))
+
+        finally:
+            try:
+                cur.close()
+            except:
+                pass
+
+    cur = mysql.connection.cursor()
     cur.execute("SELECT dokter_id, nama_depan FROM Dokter")
     dokter_list = cur.fetchall()
     cur.close()
 
     return render_template('addJadwal.html', dokter_list=dokter_list)
-
 
 @app.route('/jadwal')
 def display_jadwal():
