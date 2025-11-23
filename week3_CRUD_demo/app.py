@@ -420,13 +420,14 @@ def add_jadwal():
     # GET request - ambil list dokter untuk dropdown
     try:
         cur = mysql.connection.cursor()
-        cur.execute("SELECT dokter_id, nama_depan, nama_belakang FROM Dokter WHERE status='Aktif'")
+        cur.execute("SELECT dokter_id, nama_depan, nama_belakang FROM Dokter")
         dokter_list = cur.fetchall()
         cur.close()
         return render_template('addJadwal.html', dokter_list=dokter_list)
     except Exception as e:
         flash(f'Error: {str(e)}', 'error')
         return render_template('addJadwal.html', dokter_list=[])
+
 
 @app.route('/jadwal')
 def display_jadwal():
@@ -482,21 +483,16 @@ def book_appointment(jadwal_id):
     cur.execute("SELECT pasien_id FROM pasien WHERE email=%s", (email,))
     pasien_id = cur.fetchone()[0]
 
-    # Ambil dokter_id dari tabel Dijadwalkan dan info jadwal
+
     cur.execute("""
-        SELECT dj.dokter_id, j.hari, j.jam_mulai 
-        FROM Dijadwalkan dj
-        JOIN Jadwal_dokter j ON dj.jadwal_id = j.jadwal_id
-        WHERE j.jadwal_id=%s
+        SELECT d.dokter_id, j.hari, j.jam_mulai
+        FROM Dijadwalkan d
+        JOIN Jadwal_dokter j ON d.jadwal_id = j.jadwal_id
+        WHERE d.jadwal_id = %s
     """, (jadwal_id,))
-    result = cur.fetchone()
     
-    if not result:
-        flash("Jadwal tidak ditemukan", "error")
-        cur.close()
-        return redirect(url_for('display_jadwal'))
-    
-    dokter_id, hari, jam_mulai = result
+    dokter_id, hari, jam_mulai = cur.fetchone()
+
 
     cur.execute("""
         INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status)
