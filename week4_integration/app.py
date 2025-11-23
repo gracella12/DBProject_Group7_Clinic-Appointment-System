@@ -243,6 +243,27 @@ def display_dokter():
         flash(f'Error: {str(e)}', 'error')
         return redirect(url_for('home'))
 
+@app.route('/dokter/home')
+def dokter_home():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT nama_depan FROM Dokter WHERE email = %s", (session['email'],))
+        row = cur.fetchone()
+        cur.close()
+
+        if not row:
+            flash('Doctor profile not found.', 'error')
+            return redirect(url_for('home'))
+
+        nama = row[0]
+        return render_template('homepageDokter.html', nama=nama)
+
+    except Exception as e:
+        flash(f'Error fetching doctor profile: {str(e)}', 'error')
+        return redirect(url_for('home'))
+
 @app.route('/dokter/edit/<int:id>', methods=['GET', 'POST'])
 def edit_dokter(id):
     if 'email' not in session:
