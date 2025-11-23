@@ -26,27 +26,48 @@ def home():
 def login():
     if request.method == 'POST':
         email = request.form['email']
-        pwd = request.form['password'] 
+        pwd = request.form['password']
         
-        try:
-            cur = mysql.connection.cursor()
-            cur.execute('SELECT email, password FROM pasien WHERE email = %s', (email,))
-            user = cur.fetchone()
-            cur.close()
-            
-            if user:
-                stored_password_hash = user[1]
-                if check_password_hash(stored_password_hash, pwd):
-                    session['email'] = user[0]
-                    flash('Login successful!', 'success')
-                    return redirect(url_for('home'))
-                else:
-                    return render_template('login.html', error='Invalid email or password')
-            else:
-                return render_template('login.html', error='Invalid email or password')
-                
-        except Exception as e:
-            return render_template('login.html', error=f'Database error: {str(e)}')
+        cur = mysql.connection.cursor()
+        
+        cur.execute('SELECT pasien_id, email, password FROM Pasien WHERE email = %s', (email,))
+        pasien = cur.fetchone()
+        
+        if pasien:
+            if check_password_hash(pasien[2], pwd):
+                session['email'] = pasien[1]
+                session['role'] = 'pasien'
+                session['id'] = pasien[0]
+                cur.close()
+                flash('Login successful!', 'success')
+                return redirect(url_for('home')) 
+        
+        cur.execute('SELECT resepsionis_id, email, password FROM Resepsionis WHERE email = %s', (email,))
+        resepsionis = cur.fetchone()
+        
+        if resepsionis:
+            if check_password_hash(resepsionis[2], pwd):
+                session['email'] = resepsionis[1]
+                session['role'] = 'resepsionis'
+                session['id'] = resepsionis[0]
+                cur.close()
+                flash('Welcome Resepsionis!', 'success')
+                return redirect(url_for('homepageResepsionis')) 
+
+        cur.execute('SELECT dokter_id, email, password FROM Dokter WHERE email = %s', (email,))
+        dokter = cur.fetchone()
+        
+        if dokter:
+            if check_password_hash(dokter[2], pwd):
+                session['email'] = dokter[1]
+                session['role'] = 'dokter'
+                session['id'] = dokter[0]
+                cur.close()
+                flash('Welcome Dokter!', 'success')
+                return redirect(url_for('homepageDokter'))
+
+        cur.close()
+        return render_template('login.html', error='Invalid email or password')
     
     return render_template('login.html')
 

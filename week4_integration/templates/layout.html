@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0B0E14]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAYO Clinic</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="h-full text-white selection:bg-blue-500 selection:text-white flex flex-col">
+
+    <nav class="border-b border-gray-800 bg-[#0B0E14]/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                
+                <div class="flex items-center gap-8">
+                    <a href="{{ url_for('home') }}" class="flex items-center gap-3">
+                        <img src="{{ url_for('static', filename='images/logodark.png') }}" alt="MAYO Clinic Logo" class="h-10 w-auto object-contain">
+                        <span class="font-bold text-xl tracking-tight">MAYO Clinic</span>
+                    </a>
+
+                    <div class="hidden md:flex gap-1">
+                        <a href="{{ url_for('home') }}" class="px-4 py-2 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors">Dashboard</a>
+                        <a href="{{ url_for('display_dokter') }}" class="px-4 py-2 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors">Dokter</a>
+                        <a href="{{ url_for('display_jadwal') }}" class="px-4 py-2 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-colors">Jadwal</a>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    {% if session.get('email') %}
+                        <div class="hidden sm:flex flex-col items-end mr-2">
+                            <span class="text-sm font-bold text-white">{{ session.get('email').split('@')[0] }}</span>
+                            <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Patient</span>
+                        </div>
+                        
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open" class="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 p-[2px] cursor-pointer transition-transform active:scale-95">
+                                <div class="h-full w-full rounded-full bg-[#0B0E14] flex items-center justify-center hover:bg-transparent transition-colors">
+                                    <span class="font-bold text-xs">{{ session.get('email')[0].upper() }}</span>
+                                </div>
+                            </button>
+
+                            <div x-show="open" @click.outside="open = false" 
+                                 class="absolute right-0 mt-2 w-48 bg-[#161B22] rounded-xl shadow-xl border border-gray-800 py-1 z-50"
+                                 style="display: none;">
+                                <a href="{{ url_for('editProfile') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white">Edit Profile</a>
+                                <div class="border-t border-gray-800 my-1"></div>
+                                <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300">Log out</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="text-sm font-bold text-gray-300 hover:text-white">Log In</a>
+                        <a href="{{ url_for('register') }}" class="px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">Sign Up</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-gray-800 bg-[#0B0E14] py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-500 text-sm">© 2025 MAYO Clinic Project. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

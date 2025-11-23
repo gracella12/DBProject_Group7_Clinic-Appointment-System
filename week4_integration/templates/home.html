@@ -1,26 +1,152 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Home Page</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                max-width: 600px;
-                margin: 50px auto;
-                padding: 20px;
-            }
-            h1 {
-                color: #333;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Home Page</h1>
-        {% if email %}
-            <p>Hello, {{ email }}! You are already logged in</p>
-            <p>You can <a href="/editProfile">edit your profile</a> or <a href="/logout">Logout</a></p>
-        {% else %}
-            <p>You are not logged in. Please <a href="/login">login</a>.</p>
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-[#0B0E14] relative overflow-hidden">
+    
+    <div class="absolute top-0 left-0 w-full h-[800px] z-0 pointer-events-none">
+        <img src="{{ url_for('static', filename='images/lobby2.jpg') }}" class="w-full h-full object-cover opacity-40" alt="Clinic Lobby">
+        
+        <div class="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-[#0B0E14] to-transparent"></div>
+        
+        <div class="absolute bottom-0 left-0 w-full h-96 bg-gradient-to-t from-[#0B0E14] via-[#0B0E14] to-transparent"></div>
+        
+        <div class="absolute inset-0 bg-[#052659]/30 mix-blend-multiply"></div>
+    </div>
+
+    <div class="relative z-10 pt-20 pb-12 text-center px-4 sm:px-6 lg:px-8">
+        {% if session.get('email') %}
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#161B22]/80 backdrop-blur-sm border border-[#5483B3]/30 text-[#C1E8FF] text-sm mb-6 animate-fade-in-up">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                Welcome back, {{ session.get('email').split('@')[0] }}
+            </div>
         {% endif %}
-    </body>
-</html>
+
+        <h1 class="text-5xl md:text-7xl font-bold text-white tracking-tight mb-6 leading-tight drop-shadow-lg">
+            Streamline Your <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#7DA0CA] to-[#C1E8FF]">Healthcare Journey.</span>
+        </h1>
+        
+        <p class="text-[#C1E8FF] text-lg max-w-2xl mx-auto mb-10 drop-shadow-md">
+            An all-in-one platform to book appointments, track medical records, and connect with top doctors—faster and smarter.
+        </p>
+
+        {% if not session.get('email') %}
+            <div class="flex justify-center gap-4">
+                <a href="{{ url_for('register') }}" class="px-8 py-4 rounded-full bg-[#2F80ED] text-white font-bold hover:bg-[#2563eb] transition-all hover:-translate-y-1 shadow-lg shadow-blue-500/25 backdrop-blur-sm">
+                    Get Started
+                </a>
+                <a href="{{ url_for('login') }}" class="px-8 py-4 rounded-full bg-[#161B22]/80 text-white font-bold border border-gray-500 hover:bg-[#1f2937] transition-all backdrop-blur-sm">
+                    Log In
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 mb-24">
+        <div class="flex justify-center gap-4 md:gap-6 overflow-hidden mask-image-gradient">
+            <div class="w-24 md:w-48 h-40 md:h-64 mt-12 rounded-2xl overflow-hidden opacity-70 transform rotate-[-6deg] border border-white/10">
+                <img src="{{ url_for('static', filename='images/doctor1.jpg') }}" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500">
+            </div>
+            <div class="w-24 md:w-48 h-40 md:h-64 mt-6 rounded-2xl overflow-hidden opacity-90 transform rotate-[-3deg] border border-white/10">
+                <img src="{{ url_for('static', filename='images/doctor2.jpg') }}" class="w-full h-full object-cover">
+            </div>
+            <div class="w-32 md:w-64 h-48 md:h-80 rounded-3xl overflow-hidden shadow-2xl border-4 border-[#052659] z-20">
+                <img src="{{ url_for('static', filename='images/doctor3.jpg') }}" class="w-full h-full object-cover">
+            </div>
+            <div class="w-24 md:w-48 h-40 md:h-64 mt-6 rounded-2xl overflow-hidden opacity-90 transform rotate-[3deg] border border-white/10">
+                <img src="{{ url_for('static', filename='images/doctor4.jpg') }}" class="w-full h-full object-cover">
+            </div>
+            <div class="w-24 md:w-48 h-40 md:h-64 mt-12 rounded-2xl overflow-hidden opacity-70 transform rotate-[6deg] border border-white/10">
+                <img src="{{ url_for('static', filename='images/doctor5.jpg') }}" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500">
+            </div>
+        </div>
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-white mb-2">Everything You Need to Stay Healthy</h2>
+            <p class="text-[#7DA0CA]">Manage your clinic activities in one modern dashboard.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 grid-rows-2 gap-6 h-auto md:h-[600px]">
+            
+            <div class="md:col-span-2 row-span-1 bg-[#161B22] rounded-[2rem] p-8 relative overflow-hidden group border border-[#5483B3]/20 hover:border-[#5483B3]/50 transition-all duration-300 hover:shadow-[0_0_40px_rgba(84,131,179,0.15)]">
+                <div class="relative z-10 flex flex-col h-full justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4 text-blue-400">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Book Appointment</h3>
+                        <p class="text-[#7DA0CA] max-w-sm">Schedule a visit with our specialists easily. No more waiting in lines.</p>
+                    </div>
+                    <a href="{{ url_for('add_jadwal') }}" class="inline-flex items-center gap-2 text-white font-semibold group-hover:gap-4 transition-all mt-6">
+                        Book Now <span class="bg-white text-black rounded-full p-1"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></span>
+                    </a>
+                </div>
+                <img src="https://images.unsplash.com/photo-1638202993928-7267aad84c31?q=80&w=1974&auto=format&fit=crop" class="absolute top-0 right-0 w-1/2 h-full object-cover opacity-20 group-hover:opacity-40 group-hover:scale-105 transition-all duration-500 mask-image-left">
+            </div>
+
+            <div class="md:col-span-1 row-span-1 bg-[#052659] rounded-[2rem] p-8 relative overflow-hidden group border border-[#5483B3]/20 hover:border-[#5483B3] transition-all duration-300">
+                <div class="relative z-10">
+                    <h3 class="text-xl font-bold text-white mb-2">Find Doctor</h3>
+                    <p class="text-[#C1E8FF]/70 text-sm">Browse our top specialists.</p>
+                    <a href="{{ url_for('display_dokter') }}" class="mt-4 inline-block px-4 py-2 rounded-lg bg-[#5483B3] text-white text-sm font-bold hover:bg-white hover:text-[#052659] transition-colors">View All</a>
+                </div>
+                <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop" class="absolute bottom-0 right-0 w-32 h-32 object-cover rounded-tl-2xl border-t-4 border-l-4 border-[#0B0E14] group-hover:scale-110 transition-transform">
+            </div>
+
+            <div class="md:col-span-1 row-span-1 bg-[#161B22] rounded-[2rem] p-8 flex flex-col justify-center items-center text-center group border border-[#5483B3]/20 hover:border-[#5483B3]/50 transition-all duration-300">
+                <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-[#5483B3] to-[#C1E8FF] flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform">
+                    <svg class="w-10 h-10 text-[#021024]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-white">Check Schedule</h3>
+                <a href="{{ url_for('display_jadwal') }}" class="text-[#5483B3] text-sm mt-2 hover:underline">View Timetable</a>
+            </div>
+
+            <div class="md:col-span-2 row-span-1 bg-gradient-to-br from-[#021024] to-[#161B22] rounded-[2rem] p-8 relative overflow-hidden border border-[#5483B3]/20 group">
+                <div class="flex flex-col md:flex-row items-center gap-8 h-full">
+                    <div class="flex-1 z-10">
+                        <span class="px-3 py-1 rounded-full bg-[#5483B3]/20 text-[#5483B3] text-xs font-bold uppercase tracking-wider mb-2 inline-block">Personal</span>
+                        <h3 class="text-2xl font-bold text-white mb-2">My Profile & Records</h3>
+                        <p class="text-[#7DA0CA] mb-6">Update your personal information and keep track of your medical history.</p>
+                        <a href="{{ url_for('editProfile') }}" class="px-6 py-3 rounded-xl bg-white text-[#021024] font-bold text-sm hover:bg-[#C1E8FF] transition-colors">
+                            Edit Profile
+                        </a>
+                    </div>
+                    <div class="w-full md:w-1/3 h-32 md:h-full bg-[#052659]/50 rounded-xl relative overflow-hidden flex items-center justify-center">
+                         <div class="w-3/4 h-3/4 bg-[#161B22] rounded-lg shadow-lg p-3 space-y-2 opacity-80 group-hover:scale-105 transition-transform">
+                            <div class="h-2 w-1/2 bg-[#5483B3] rounded"></div>
+                            <div class="h-2 w-3/4 bg-[#7DA0CA]/30 rounded"></div>
+                            <div class="h-2 w-full bg-[#7DA0CA]/30 rounded"></div>
+                            <div class="flex gap-2 mt-4">
+                                <div class="h-6 w-6 rounded-full bg-[#5483B3]"></div>
+                                <div class="flex-1 h-6 bg-[#7DA0CA]/20 rounded"></div>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .mask-image-gradient {
+        -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    }
+    .mask-image-left {
+        -webkit-mask-image: linear-gradient(to left, black, transparent);
+        mask-image: linear-gradient(to left, black, transparent);
+    }
+    @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up {
+        animation: fade-in-up 0.8s ease-out forwards;
+    }
+</style>
+{% endblock %}
