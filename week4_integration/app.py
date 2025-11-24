@@ -59,10 +59,12 @@ def login():
         
         cur = mysql.connection.cursor()
         
+        # --- 1. Pengecekan Pasien (Menggunakan HASH) ---
         cur.execute('SELECT pasien_id, email, password FROM Pasien WHERE email = %s', (email,))
         pasien = cur.fetchone()
         
         if pasien:
+            # Pasien: Menggunakan check_password_hash karena didaftarkan melalui form /register
             if check_password_hash(pasien[2], pwd):
                 session['email'] = pasien[1]
                 session['role'] = 'pasien'
@@ -71,11 +73,13 @@ def login():
                 flash('Login successful!', 'success')
                 return redirect(url_for('home')) 
         
+        # --- 2. Pengecekan Resepsionis (Menggunakan PLAINTEXT) ---
         cur.execute('SELECT resepsionis_id, email, password FROM Resepsionis WHERE email = %s', (email,))
         resepsionis = cur.fetchone()
         
         if resepsionis:
-            if check_password_hash(resepsionis[2], pwd):
+            # Resepsionis: Menggunakan perbandingan string langsung (plaintext)
+            if resepsionis[2] == pwd:
                 session['email'] = resepsionis[1]
                 session['role'] = 'resepsionis'
                 session['id'] = resepsionis[0]
@@ -83,22 +87,25 @@ def login():
                 flash('Welcome Resepsionis!', 'success')
                 return redirect(url_for('homepageResepsionis')) 
 
+        # --- 3. Pengecekan Dokter (Menggunakan PLAINTEXT) ---
         cur.execute('SELECT dokter_id, email, password FROM Dokter WHERE email = %s', (email,))
         dokter = cur.fetchone()
         
         if dokter:
-            if check_password_hash(dokter[2], pwd):
+            # Dokter: Menggunakan perbandingan string langsung (plaintext)
+            if dokter[2] == pwd:
                 session['email'] = dokter[1]
                 session['role'] = 'dokter'
                 session['id'] = dokter[0]
                 cur.close()
-                flash('Welcome Dokter!', 'success')
-                return redirect(url_for('homepageDokter'))
+                flash('Welcome Doctor!', 'success')
+                return redirect(url_for('dokter_home'))
 
         cur.close()
         return render_template('login.html', error='Invalid email or password')
     
     return render_template('login.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -333,14 +340,23 @@ def appointment_history():
 # Modul Dokter 
 @app.route('/jadwal/add', methods=['GET', 'POST'])
 def add_jadwal_dokter():
+    if 'role' not in session or session['role'] != 'dokter':
+        flash('Akses ditolak. Hanya Dokter yang dapat menambah jadwal.', 'error')
+        return redirect(url_for('login'))
+        
+    dokter_id = session['id'] # AMBIL ID DOKTER LANGSUNG DARI SESI
+    
     if request.method == 'POST':
-        dokter_id = request.form['dokter_id']
+        # TIDAK PERLU MENGAMBIL dokter_id DARI FORM
         hari = request.form['hari']
-        jam_mulai = request.form['jam_mulai']
-        jam_selesai = request.form['jam_selesai']
+        
+        # Menggunakan nama input dari HTML: waktu_mulai dan waktu_selesai
+        jam_mulai = request.form['waktu_mulai']
+        jam_selesai = request.form['waktu_selesai']
 
         cur = mysql.connection.cursor()
         try:
+            # 1. Sisipkan ke tabel Jadwal_dokter
             cur.execute(
                 "INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai) VALUES (%s, %s, %s)",
                 (hari, jam_mulai, jam_selesai)
@@ -348,6 +364,7 @@ def add_jadwal_dokter():
 
             jadwal_id = cur.lastrowid
 
+            # 2. Sisipkan ke tabel Dijadwalkan dengan dokter_id dari sesi
             cur.execute(
                 "INSERT INTO Dijadwalkan (dokter_id, jadwal_id) VALUES (%s, %s)",
                 (dokter_id, jadwal_id)
@@ -360,7 +377,8 @@ def add_jadwal_dokter():
         except Exception as e:
             mysql.connection.rollback()
             flash(f'Error menambahkan jadwal: {str(e)}', 'error')
-            return redirect(url_for('add_jadwal_dokter'))
+            # Jika terjadi error, kita kembali ke halaman yang sama (GET)
+            return redirect(url_for('display_jadwal')) 
 
         finally:
             try:
@@ -368,12 +386,15 @@ def add_jadwal_dokter():
             except:
                 pass
 
+    # Bagian GET request: Tidak perlu lagi mengambil daftar dokter
+    # Namun, kita ambil nama dokter untuk ditampilkan (opsional)
     cur = mysql.connection.cursor()
-    cur.execute("SELECT dokter_id, nama_depan, nama_belakang FROM Dokter")
-    dokter_list = cur.fetchall()
+    cur.execute("SELECT nama_depan FROM Dokter WHERE dokter_id = %s", (dokter_id,))
+    nama_dokter = cur.fetchone()[0]
     cur.close()
 
-    return render_template('addJadwalDokter.html', dokter_list=dokter_list)
+    # Mengirim nama dokter ke template
+    return render_template('addJadwalDokter.html', nama_dokter=nama_dokter)
 
 @app.route('/dokter')
 def display_dokter():
@@ -407,7 +428,7 @@ def dokter_home():
             return redirect(url_for('home'))
 
         nama = row[0]
-        return render_template('homepageDokter.html', nama=nama)
+        return render_template('newHomepageDokter.html', nama=nama)
 
     except Exception as e:
         flash(f'Error fetching doctor profile: {str(e)}', 'error')
