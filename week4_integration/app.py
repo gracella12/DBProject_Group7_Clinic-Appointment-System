@@ -447,14 +447,16 @@ def dokter_dashboard():
 
         # appointments for today
         cur.execute("""
-            SELECT p.nama_depan, a.waktu, a.appointment_id
+            SELECT p.nama_depan, a.waktu, a.appointment_id, a.status
             FROM Appointment a
             JOIN pasien p ON a.pasien_id = p.pasien_id
             WHERE a.dokter_id = %s AND a.tanggal = CURDATE()
             ORDER BY a.waktu
         """, (dokter_id,))
         appt_rows = cur.fetchall()
-        appointments_today = [{'nama': r[0], 'waktu': r[1], 'appointment_id': r[2]} for r in appt_rows]
+        appointments_today = []
+        for r in appt_rows:
+            appointments_today.append({'nama': r[0], 'waktu': r[1], 'appointment_id': r[2], 'status': r[3]})
 
         # upcoming count
         cur.execute("SELECT COUNT(*) FROM Appointment WHERE dokter_id = %s AND tanggal >= CURDATE()", (dokter_id,))
