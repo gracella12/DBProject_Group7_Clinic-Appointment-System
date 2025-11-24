@@ -364,7 +364,7 @@ def add_jadwal_dokter():
         except Exception as e:
             mysql.connection.rollback()
             flash(f'Error menambahkan jadwal: {str(e)}', 'error')
-            return redirect(url_for('add_jadwal'))
+            return redirect(url_for('add_jadwal_dokter'))
 
         finally:
             try:
@@ -373,7 +373,7 @@ def add_jadwal_dokter():
                 pass
 
     cur = mysql.connection.cursor()
-    cur.execute("SELECT dokter_id, nama_depan FROM Dokter")
+    cur.execute("SELECT dokter_id, nama_depan, nama_belakang FROM Dokter")
     dokter_list = cur.fetchall()
     cur.close()
 
@@ -696,6 +696,54 @@ def delete_jadwal(id):
         flash(f'Error: {str(e)}', 'error')
     
     return redirect(url_for('display_jadwal'))
+
+
+@app.route('/jadwal/edit/<int:id>', methods=['GET', 'POST'])
+def edit_jadwal(id):
+    if 'email' not in session:
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+    if request.method == 'POST':
+        dokter_id = request.form['dokter_id']
+        hari = request.form['hari']
+        jam_mulai = request.form['waktu_mulai']
+        jam_selesai = request.form['waktu_selesai']
+        try:
+            cur.execute("UPDATE Jadwal_dokter SET hari=%s, jam_mulai=%s, jam_selesai=%s WHERE jadwal_id=%s",
+                        (hari, jam_mulai, jam_selesai, id))
+            cur.execute("UPDATE Dijadwalkan SET dokter_id=%s WHERE jadwal_id=%s",
+                        (dokter_id, id))
+            mysql.connection.commit()
+            flash('Jadwal berhasil diperbarui', 'success')
+            return redirect(url_for('display_jadwal'))
+        except Exception as e:
+            mysql.connection.rollback()
+            flash(f'Error updating schedule: {str(e)}', 'error')
+            return redirect(url_for('display_jadwal'))
+
+    # GET: fetch existing jadwal + dokter list
+    cur.execute("SELECT j.jadwal_id, j.hari, j.jam_mulai, j.jam_selesai, d.dokter_id FROM Jadwal_dokter j JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id JOIN Dokter d ON dj.dokter_id = d.dokter_id WHERE j.jadwal_id = %s", (id,))
+    row = cur.fetchone()
+    if not row:
+        cur.close()
+        flash('Jadwal tidak ditemukan', 'error')
+        return redirect(url_for('display_jadwal'))
+
+    jadwal = {
+        'jadwal_id': row[0],
+        'hari': row[1],
+        'jam_mulai': row[2],
+        'jam_selesai': row[3],
+        'dokter_id': row[4]
+    }
+
+    cur.execute("SELECT dokter_id, nama_depan, nama_belakang FROM Dokter")
+    dokter_list = cur.fetchall()
+    cur.close()
+
+    return render_template('editJadwalDokter.html', jadwal=jadwal, dokter_list=dokter_list)
 
 #Modul appoinment
 @app.route('/appointment/book/<int:jadwal_id>')
