@@ -67,12 +67,13 @@
 
     <main class="ml-64 p-8">
         <div class ="flex justify-between items-center mb-2">
-            <h2 class="text-3xl font-bold mb-4 mt-2">Welcome, Dr. {name}.</h2>
-            <button type="button" class="py-3 px-4 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+            <h2 class="text-3xl font-bold mb-4 mt-2">Welcome, Dr. {{ nama }}.</h2>
+            <a href="{{ url_for('add_jadwal_dokter') }}" class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
                 + Add Schedule
-            </button>
+            </a>
         </div>
 
+        <!--statistic + Appointment-->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
 
                 <div class="lg:col-span-2 flex flex-col gap-6">
@@ -88,13 +89,13 @@
                                     
                                     <!--fetch banyak pasien hari itu-->
                                     <div class="flex flex-col mt-4 items-center">
-                                        <span class="text-4xl font-bold text-gray-900">{8}</span>
+                                        <span class="text-4xl font-bold text-gray-900">{{ appointments_today|length }}</span>
                                         <span class="text-sm text-gray-400 mb-1 mt-2">Patient</span>
                                     </div>
                                     
                                     <!--fetch banyak pasien upcoming-->
                                     <div class="flex flex-col mt-4 items-center">
-                                        <span class="text-4xl font-bold text-gray-900">{12}</span>
+                                        <span class="text-4xl font-bold text-gray-900">{{ upcoming_count }}</span>
                                         <span class="text-sm text-gray-400 mb-1 mt-2">Upcoming</span>
                                     </div>
                                     
@@ -119,36 +120,34 @@
                                     
                                 </div>
                             </div>
-
                         </div>
                     </div>
 
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-96 overflow-y-auto">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-lg text-gray-800">Today Appointment</h3>
-                            <button class="text-sm text-blue-600 hover:underline">Lihat Semua</button>
+                            <a href="displayAppoinment.html" class="text-sm text-blue-600 hover:underline">Lihat Semua</button>
                         </div>
                         
                         <div class="space-y-4">
-                            <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-gray-200 rounded-full"></div> <div>
-                                        <p class="font-semibold text-gray-800">Budi Santoso</p>
-                                        <p class="text-xs text-gray-500">Demam Tinggi</p>
-                                    </div>
+                            {% for appt in appointments_today %}
+                            <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors border border-gray-300 hover:border-gray-100 w-full">
+
+                                <div class="flex flex-col">
+                                    <p class="font-semibold text-gray-800">{{ appt.nama }}</p>
+                                    <p class="text-sm text-gray-500">{{ appt.waktu }} WIB</p>
                                 </div>
-                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-medium">Waiting</span>
-                            </div>
-                            <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-gray-200 rounded-full"></div>
-                                    <div>
-                                        <p class="font-semibold text-gray-800">Siti Aminah</p>
-                                        <p class="text-xs text-gray-500">Cek Darah</p>
-                                    </div>
+
+                                <div>
+                                    <a href="{{ url_for('add_rekam', appointment_id=appt.appointment_id) }}" class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none transition-all shadow-sm">
+                                        + Rekam Medis
+                                    </a>
                                 </div>
-                                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">Selesai</span>
+
                             </div>
+                            {% else %}
+                            <div class="text-center text-sm text-gray-400 py-6">Belum ada appointment untuk hari ini.</div>
+                            {% endfor %}
                         </div>
                     </div>
 

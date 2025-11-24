@@ -399,6 +399,61 @@ def dokter_home():
         flash(f'Error fetching doctor profile: {str(e)}', 'error')
         return redirect(url_for('home'))
 
+
+@app.route('/dokter/dashboard')
+def dokter_dashboard():
+    """Doctor dashboard integrated with `newHomepageDokter.html`.
+    Shows doctor's name, their schedules and today's appointments.
+    """
+    if 'email' not in session or session.get('role') != 'dokter':
+        return redirect(url_for('login'))
+
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT dokter_id, nama_depan FROM Dokter WHERE email = %s", (session['email'],))
+        row = cur.fetchone()
+        if not row:
+            cur.close()
+            flash('Doctor profile not found.', 'error')
+            return redirect(url_for('home'))
+
+        dokter_id, nama = row[0], row[1]
+
+        # jadwal dokter
+        cur.execute("""
+            SELECT j.hari, j.jam_mulai, j.jam_selesai
+            FROM Dijadwalkan d
+            JOIN Jadwal_dokter j ON d.jadwal_id = j.jadwal_id
+            WHERE d.dokter_id = %s
+            ORDER BY j.hari, j.jam_mulai
+        """, (dokter_id,))
+        jadwal_rows = cur.fetchall()
+        jadwal_saya = [{'hari': r[0], 'jam_mulai': r[1], 'jam_selesai': r[2]} for r in jadwal_rows]
+
+        # appointments for today
+        cur.execute("""
+            SELECT p.nama_depan, a.waktu, a.appointment_id
+            FROM Appointment a
+            JOIN pasien p ON a.pasien_id = p.pasien_id
+            WHERE a.dokter_id = %s AND a.tanggal = CURDATE()
+            ORDER BY a.waktu
+        """, (dokter_id,))
+        appt_rows = cur.fetchall()
+        appointments_today = [{'nama': r[0], 'waktu': r[1], 'appointment_id': r[2]} for r in appt_rows]
+
+        # upcoming count
+        cur.execute("SELECT COUNT(*) FROM Appointment WHERE dokter_id = %s AND tanggal >= CURDATE()", (dokter_id,))
+        upcoming_count = cur.fetchone()[0]
+
+        cur.close()
+
+        return render_template('newHomepageDokter.html', nama=nama, jadwal_saya=jadwal_saya,
+                               appointments_today=appointments_today, upcoming_count=upcoming_count)
+
+    except Exception as e:
+        flash(f'Error loading dashboard: {str(e)}', 'error')
+        return redirect(url_for('home'))
+
 @app.route('/dokter/edit/<int:id>', methods=['GET', 'POST'])
 def edit_dokter(id):
     if 'email' not in session:
