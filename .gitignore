@@ -36,3 +36,12 @@ Thumbs.db
 
 # Logs
 *.log
+
+node_modules/
+**/node_modules/
+__pycache__/
+*.pyc
+.env
+.venv
+env/
+venv/
