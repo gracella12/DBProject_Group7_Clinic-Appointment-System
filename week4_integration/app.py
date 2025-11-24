@@ -11,29 +11,48 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key ='membuatLogin'
 
-app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
-app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
-app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
-app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
-app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
+# GANTI BARIS 14-19 DENGAN INI:
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = ''  # Kosongkan jika tidak ada password
+app.config['MYSQL_DB'] = 'DBProject' # Pastikan nama DB ini sesuai di phpMyAdmin
+app.config['MYSQL_PORT'] = 3306
 
-#if os.name != 'nt':
-    #app.config['MYSQL_UNIX_SOCKET'] = '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
-
+# KHUSUS PENGGUNA MAC (Hapus tanda pagar # di depannya)
+# Cek apakah kamu install XAMPP? Jika iya, aktifkan baris ini:
+if os.name != 'nt':
+    app.config['MYSQL_UNIX_SOCKET'] = '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
 mysql = MySQL(app)
 
 @app.route('/')
 def home():
-    # Ambil data dokter dari database
+    # Ambil data dokter dari database untuk ditampilkan di halaman depan (untuk pasien/umum)
     cur = mysql.connection.cursor()
     cur.execute("SELECT dokter_id, nama_depan, nama_belakang, tanggal_masuk, status, foto FROM Dokter")
     doctors = cur.fetchall()
     cur.close()
     
-    # Kirim data 'doctors' ke template
+    # Logika Redirect Berdasarkan Role
     if 'email' in session:
+        role = session.get('role')
+        
+        if role == 'resepsionis':
+            # KHUSUS RESEPSIONIS: Pindah ke Dashboard Baru
+            return redirect(url_for('homepageResepsionis'))
+            
+        elif role == 'dokter':
+            # KHUSUS DOKTER: Pindah ke Home Dokter
+            return redirect(url_for('dokter_home'))
+            
+        elif role == 'pasien':
+            # PASIEN: Tetap di halaman utama tapi mode login
+            return render_template('home.html', email=session['email'], doctors=doctors)  
+            
+        # Default jika role tidak dikenali
         return render_template('home.html', email=session['email'], doctors=doctors)
+    
     else:   
+        # Jika belum login (Tamu)
         return render_template('home.html', doctors=doctors)
     
 
@@ -707,6 +726,62 @@ def display_rekam():
     data = cur.fetchall()
     cur.close()
     return render_template('displayRekam.html', rekam_list=data)
+
+@app.route('/receptionist-dashboard')
+def homepageResepsionis():
+    # Cek keamanan: hanya role resepsionis yang boleh masuk
+    if 'email' not in session or session.get('role') != 'resepsionis':
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+
+    # 1. Ambil Statistik Ringkas
+    cur.execute("SELECT COUNT(*) FROM Appointment WHERE DATE(tanggal) = CURDATE()")
+    today_appointments = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM Dokter WHERE status = 'Active'")
+    active_doctors = cur.fetchone()[0]
+
+    # 2. Ambil Data Appointment Lengkap (Join Pasien & Dokter)
+    # Mengambil: ID, Nama Pasien, Nama Dokter, Hari, Jam, Status
+    query = """
+        SELECT 
+            a.appointment_id, 
+            p.nama_depan AS pasien_depan, 
+            p.nama_belakang AS pasien_belakang,
+            p.email AS pasien_email,
+            d.nama_depan AS dokter_depan, 
+            d.nama_belakang AS dokter_belakang,
+            a.tanggal, 
+            a.waktu, 
+            a.status
+        FROM Appointment a
+        JOIN Pasien p ON a.pasien_id = p.pasien_id
+        JOIN Dokter d ON a.dokter_id = d.dokter_id
+        ORDER BY a.tanggal DESC, a.waktu ASC
+    """
+    cur.execute(query)
+    appointments_data = cur.fetchall()
+    cur.close()
+
+    # Format data untuk HTML
+    appointments_list = []
+    for row in appointments_data:
+        appointments_list.append({
+            'id': row[0],
+            'patient_name': f"{row[1]} {row[2]}",
+            'patient_contact': row[3],
+            'doctor_name': f"Dr. {row[4]} {row[5]}",
+            'date': row[6],
+            'time': row[7],
+            'status': row[8]
+        })
+
+    return render_template('homepageReceptionist.html', 
+                           appointments=appointments_list,
+                           today_count=today_appointments,
+                           active_docs=active_doctors)
 
 if __name__ == '__main__':
     app.run(debug=True)
