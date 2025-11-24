@@ -156,9 +156,27 @@
 
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-auto">
                         <h3 class="font-bold text-lg text-gray-800 mb-2">Calendar</h3>
-                        <div class="bg-blue-50 rounded-lg p-4 text-center">
-                            <span class="block text-4xl font-bold text-blue-800">24</span>
-                            <span class="block text-blue-600 font-medium">November 2025</span>
+
+                        <div id="calendar" class="w-full">
+                            <div class="flex items-center justify-between mb-3">
+                                <button id="prevBtn" class="text-sm px-2 py-1 rounded-md hover:bg-gray-100">❮</button>
+                                <div class="text-center">
+                                    <div id="monthYear" class="text-lg font-semibold text-gray-800"></div>
+                                </div>
+                                <button id="nextBtn" class="text-sm px-2 py-1 rounded-md hover:bg-gray-100">❯</button>
+                            </div>
+
+                            <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2">
+                                <div class="font-medium">Min</div>
+                                <div class="font-medium">Sen</div>
+                                <div class="font-medium">Sel</div>
+                                <div class="font-medium">Rab</div>
+                                <div class="font-medium">Kam</div>
+                                <div class="font-medium">Jum</div>
+                                <div class="font-medium">Sab</div>
+                            </div>
+
+                            <div id="daysGrid" class="grid grid-cols-7 gap-1"></div>
                         </div>
                     </div>
 
@@ -178,5 +196,61 @@
                 </div>
                 
     </main>
+    <script>
+        // Simple interactive calendar (client-side)
+        (function(){
+            const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            let today = new Date();
+            let currentMonth = today.getMonth();
+            let currentYear = today.getFullYear();
+
+            const monthYearEl = document.getElementById('monthYear');
+            const daysGrid = document.getElementById('daysGrid');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            function renderCalendar(month, year){
+                monthYearEl.textContent = `${monthNames[month]} ${year}`;
+                daysGrid.innerHTML = '';
+
+                const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // Fill initial empty cells
+                for(let i = 0; i < firstDay; i++){
+                    const empty = document.createElement('div');
+                    empty.className = 'p-2 text-sm text-gray-300';
+                    daysGrid.appendChild(empty);
+                }
+
+                for(let d = 1; d <= daysInMonth; d++){
+                    const cell = document.createElement('div');
+                    const isToday = (d === today.getDate() && month === today.getMonth() && year === today.getFullYear());
+                    cell.className = 'p-2 text-sm flex items-center justify-center';
+                    if(isToday){
+                        cell.innerHTML = `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white font-semibold">${d}</span>`;
+                    } else {
+                        cell.innerHTML = `<span class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100">${d}</span>`;
+                    }
+                    daysGrid.appendChild(cell);
+                }
+            }
+
+            prevBtn.addEventListener('click', function(){
+                currentMonth -= 1;
+                if(currentMonth < 0){ currentMonth = 11; currentYear -= 1; }
+                renderCalendar(currentMonth, currentYear);
+            });
+
+            nextBtn.addEventListener('click', function(){
+                currentMonth += 1;
+                if(currentMonth > 11){ currentMonth = 0; currentYear += 1; }
+                renderCalendar(currentMonth, currentYear);
+            });
+
+            // Initial render
+            renderCalendar(currentMonth, currentYear);
+        })();
+    </script>
 </body>
 </html>
