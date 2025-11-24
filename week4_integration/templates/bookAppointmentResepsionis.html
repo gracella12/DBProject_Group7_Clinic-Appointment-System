@@ -43,64 +43,65 @@
       {% endwith %}
 
       <form action="{{ url_for('receptionist_book_appointment') }}" method="POST" class="space-y-6">
+                
+                <div class="space-y-2">
+                    <label for="pasien_id" class="text-sm font-medium text-[#C1E8FF] uppercase tracking-wider ml-1">Select Patient</label>
+                    <div class="relative">
+                        <select name="pasien_id" id="pasien_id" required
+                            style="color-scheme: dark;"
+                            class="w-full appearance-none px-5 py-4 rounded-xl bg-[#021024] border border-[#5483B3]/50 text-white placeholder-gray-400 focus:outline-none focus:border-[#7DA0CA] focus:ring-1 focus:ring-[#7DA0CA] transition-all cursor-pointer">
+                            
+                            <option value="" disabled selected>-- Choose a Registered Patient --</option>
+                            
+                            {% for p in patients %}
+                                <option value="{{ p[0] }}">
+                                    {{ p[1] }} {{ p[2] }} ({{ p[3] }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#5483B3]">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                    <p class="text-xs text-[#5483B3] ml-1">*Only registered patients appear here.</p>
+                </div>
 
-        <div class="space-y-2">
-          <label for="pasien_id" class="text-sm font-medium text-[#C1E8FF] uppercase tracking-wider ml-1">Select
-            Patient</label>
-          <div class="relative">
-            <select name="pasien_id" id="pasien_id" required
-              class="w-full appearance-none px-5 py-4 rounded-xl bg-[#021024] border border-[#5483B3]/30 text-white focus:outline-none focus:border-[#7DA0CA] focus:ring-1 focus:ring-[#7DA0CA] transition-all cursor-pointer">
-              <option value="" disabled selected>-- Choose a Registered Patient --</option>
-              {% for p in patients %}
-              <option value="{{ p[0] }}">
-                {{ p[1] }} {{ p[2] }} &mdash; {{ p[3] }}
-              </option>
-              {% endfor %}
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#5483B3]">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </div>
-          </div>
-          <p class="text-xs text-[#5483B3] ml-1">*Only registered patients appear here.</p>
-        </div>
+                <div class="space-y-2">
+                    <label for="jadwal_id" class="text-sm font-medium text-[#C1E8FF] uppercase tracking-wider ml-1">Select Doctor Schedule</label>
+                    <div class="relative">
+                        <select name="jadwal_id" id="jadwal_id" required
+                            style="color-scheme: dark;"
+                            class="w-full appearance-none px-5 py-4 rounded-xl bg-[#021024] border border-[#5483B3]/50 text-white placeholder-gray-400 focus:outline-none focus:border-[#7DA0CA] focus:ring-1 focus:ring-[#7DA0CA] transition-all cursor-pointer">
+                            
+                            <option value="" disabled selected>-- Choose Available Schedule --</option>
+                            
+                            {% for s in schedules %}
+                                <option value="{{ s[0] }}">
+                                    Dr. {{ s[1] }} {{ s[2] }} | {{ s[3] }} ({{ s[4] }} - {{ s[5] }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#5483B3]">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="space-y-2">
-          <label for="jadwal_id" class="text-sm font-medium text-[#C1E8FF] uppercase tracking-wider ml-1">Select Doctor
-            Schedule</label>
-          <div class="relative">
-            <select name="jadwal_id" id="jadwal_id" required
-              class="w-full appearance-none px-5 py-4 rounded-xl bg-[#021024] border border-[#5483B3]/30 text-white focus:outline-none focus:border-[#7DA0CA] focus:ring-1 focus:ring-[#7DA0CA] transition-all cursor-pointer">
-              <option value="" disabled selected>-- Choose Available Schedule --</option>
-              {% for s in schedules %}
-              <option value="{{ s[0] }}">
-                Dr. {{ s[1] }} {{ s[2] }} | {{ s[3] }} ({{ s[4] }} - {{ s[5] }})
-              </option>
-              {% endfor %}
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#5483B3]">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div class="pt-4">
-          <button type="submit"
-            class="w-full py-4 bg-gradient-to-r from-[#5483B3] to-[#7DA0CA] text-[#021024] font-bold text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2">
-            <span>Confirm Appointment</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </button>
-          <div class="text-center mt-4">
-            <a href="{{ url_for('homepageResepsionis') }}"
-              class="text-sm text-[#5483B3] hover:text-[#7DA0CA] transition">Cancel and return to dashboard</a>
-          </div>
-        </div>
-      </form>
+                <div class="pt-4">
+                    <button type="submit" 
+                        class="w-full py-4 bg-gradient-to-r from-[#5483B3] to-[#7DA0CA] text-[#021024] font-bold text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2">
+                        <span>Confirm Appointment</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </button>
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('homepageResepsionis') }}" class="text-sm text-[#5483B3] hover:text-[#7DA0CA] transition">Cancel and return to dashboard</a>
+                    </div>
+                </div>
+            </form>
     </div>
   </div>
 </div>

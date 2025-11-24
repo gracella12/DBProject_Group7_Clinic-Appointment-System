@@ -5,6 +5,7 @@ from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 
@@ -17,17 +18,16 @@ app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
 
+
 mysql = MySQL(app)
 
 @app.route('/')
 def home():
-    # Ambil data dokter dari database untuk ditampilkan di halaman depan (untuk pasien/umum)
     cur = mysql.connection.cursor()
     cur.execute("SELECT dokter_id, nama_depan, nama_belakang, tanggal_masuk, status, foto FROM Dokter")
     doctors = cur.fetchall()
     cur.close()
     
-    # Logika Redirect Berdasarkan Role
     if 'email' in session:
         role = session.get('role')
         
@@ -416,9 +416,7 @@ def dokter_home():
 
 @app.route('/dokter/dashboard')
 def dokter_dashboard():
-    """Doctor dashboard integrated with `newHomepageDokter.html`.
-    Shows doctor's name, their schedules and today's appointments.
-    """
+
     if 'email' not in session or session.get('role') != 'dokter':
         return redirect(url_for('login'))
 
@@ -446,14 +444,16 @@ def dokter_dashboard():
 
         # appointments for today
         cur.execute("""
-            SELECT p.nama_depan, a.waktu, a.appointment_id
+            SELECT p.nama_depan, a.waktu, a.appointment_id, a.status
             FROM Appointment a
             JOIN pasien p ON a.pasien_id = p.pasien_id
             WHERE a.dokter_id = %s AND a.tanggal = CURDATE()
             ORDER BY a.waktu
         """, (dokter_id,))
         appt_rows = cur.fetchall()
-        appointments_today = [{'nama': r[0], 'waktu': r[1], 'appointment_id': r[2]} for r in appt_rows]
+        appointments_today = []
+        for r in appt_rows:
+            appointments_today.append({'nama': r[0], 'waktu': r[1], 'appointment_id': r[2], 'status': r[3]})
 
         # upcoming count
         cur.execute("SELECT COUNT(*) FROM Appointment WHERE dokter_id = %s AND tanggal >= CURDATE()", (dokter_id,))
@@ -725,7 +725,52 @@ def book_appointment(jadwal_id):
     cur.close()
 
     flash("Appointment berhasil dibuat!", "success")
-    return redirect(url_for('display_appointment'))
+    return redirect("makeAppointment.html")
+
+
+@app.route('/booking', methods=['POST'])
+def book_appointment_form():
+    # Require pasien login for booking via form
+    if 'email' not in session or session.get('role') != 'pasien':
+        flash('Silakan login sebagai pasien untuk membuat appointment.', 'error')
+        return redirect(url_for('login'))
+
+    pasien_id = session.get('id')
+    dokter_id = request.form.get('dokter_id')
+    jadwal_id = request.form.get('jadwal_id')
+    tanggal = request.form.get('tanggal')
+    patient_name = request.form.get('patient_name')
+
+    if not dokter_id or not jadwal_id or not tanggal:
+        flash('Dokter, jadwal, dan tanggal harus dipilih.', 'error')
+        return redirect(url_for('home'))
+
+    try:
+        cur = mysql.connection.cursor()
+
+        # Get jam_mulai from Jadwal_dokter
+        cur.execute('SELECT jam_mulai FROM Jadwal_dokter WHERE jadwal_id = %s', (jadwal_id,))
+        r = cur.fetchone()
+        waktu = r[0] if r else None
+
+        # Insert appointment with status 'waiting'
+        cur.execute(
+            "INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status) VALUES (%s, %s, %s, %s, %s, %s)",
+            (pasien_id, dokter_id, jadwal_id, tanggal, waktu, 'waiting')
+        )
+        mysql.connection.commit()
+        cur.close()
+
+        flash('Appointment berhasil dibuat dan berstatus waiting.', 'success')
+        return redirect(url_for('display_appointment'))
+
+    except Exception as e:
+        try:
+            mysql.connection.rollback()
+        except:
+            pass
+        flash(f'Error saat membuat appointment: {str(e)}', 'error')
+        return redirect(url_for('home'))
 
 @app.route('/appointment')
 def display_appointment():
@@ -736,14 +781,33 @@ def display_appointment():
     return render_template('displayAppointment.html', app_list=data)
 
 @app.route('/appointment/delete/<int:id>')
-def delete_appointment(id):
-    cur = mysql.connection.cursor()
-    cur.execute("DELETE FROM Appointment WHERE appointment_id=%s", (id,))
-    mysql.connection.commit()
-    cur.close()
+# Pastikan sudah import request di paling atas file app.py
+# from flask import ..., request
 
-    flash("Appointment dibatalkan.", "success")
-    return redirect(url_for('display_appointment'))
+@app.route('/appointment/delete/<int:id>')
+def delete_appointment(id):
+    # Cek login dulu
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    try:
+        cur = mysql.connection.cursor()
+        
+        # Eksekusi Hapus Data
+        cur.execute("DELETE FROM Appointment WHERE appointment_id=%s", (id,))
+        mysql.connection.commit()
+        cur.close()
+
+        flash("Appointment is successfully canceled.", "success")
+        
+        # --- BAGIAN PENTING ---
+        # Kembali ke halaman sebelumnya (Dashboard Resepsionis)
+        # Jika tidak terdeteksi, baru lari ke homepageResepsionis sebagai cadangan
+        return redirect(request.referrer or url_for('homepageResepsionis'))
+
+    except Exception as e:
+        flash(f"Gagal menghapus: {str(e)}", "error")
+        return redirect(url_for('homepageResepsionis'))
 
 #Modul Rekam medis
 @app.route('/rekam/add/<int:appointment_id>', methods=['GET','POST'])
@@ -778,6 +842,8 @@ def display_rekam():
     return render_template('displayRekam.html', rekam_list=data)
 
 @app.route('/receptionist-dashboard')
+@app.route('/receptionist-dashboard')
+@app.route('/receptionist-dashboard')
 def homepageResepsionis():
     # Cek keamanan: hanya role resepsionis yang boleh masuk
     if 'email' not in session or session.get('role') != 'resepsionis':
@@ -786,15 +852,28 @@ def homepageResepsionis():
 
     cur = mysql.connection.cursor()
 
-    # 1. Ambil Statistik Ringkas
+    # 1. Ambil Statistik: Appointment Hari Ini
     cur.execute("SELECT COUNT(*) FROM Appointment WHERE DATE(tanggal) = CURDATE()")
     today_appointments = cur.fetchone()[0]
 
-    cur.execute("SELECT COUNT(*) FROM Dokter WHERE status = 'Active'")
-    active_doctors = cur.fetchone()[0]
+    # ================= PERBAIKAN LOGIKA ACTIVE DOCTORS =================
+    # Kita cari tahu hari ini hari apa dalam Bahasa Indonesia
+    days_map = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+    hari_ini = days_map[datetime.now().weekday()] # 0=Senin, 6=Minggu
 
-    # 2. Ambil Data Appointment Lengkap (Join Pasien & Dokter)
-    # Mengambil: ID, Nama Pasien, Nama Dokter, Hari, Jam, Status
+    # Query: Hitung dokter yang punya jadwal di HARI INI
+    query_active_docs = """
+        SELECT COUNT(DISTINCT d.dokter_id)
+        FROM Dokter d
+        JOIN Dijadwalkan dj ON d.dokter_id = dj.dokter_id
+        JOIN Jadwal_dokter j ON dj.jadwal_id = j.jadwal_id
+        WHERE j.hari = %s
+    """
+    cur.execute(query_active_docs, (hari_ini,))
+    active_doctors = cur.fetchone()[0]
+    # ===================================================================
+
+    # 3. Ambil Data Appointment Lengkap (Join Pasien & Dokter)
     query = """
         SELECT 
             a.appointment_id, 
@@ -809,7 +888,8 @@ def homepageResepsionis():
         FROM Appointment a
         JOIN Pasien p ON a.pasien_id = p.pasien_id
         JOIN Dokter d ON a.dokter_id = d.dokter_id
-        ORDER BY a.tanggal DESC, a.waktu ASC
+        WHERE a.tanggal >= CURDATE() -- Opsional: Hanya tampilkan hari ini ke depan
+        ORDER BY a.tanggal ASC, a.waktu ASC
     """
     cur.execute(query)
     appointments_data = cur.fetchall()
@@ -831,8 +911,7 @@ def homepageResepsionis():
     return render_template('homepageReceptionist.html', 
                            appointments=appointments_list,
                            today_count=today_appointments,
-                           active_docs=active_doctors)
-
+                           active_docs=active_doctors) # Kirim hasil hitungan baru
 # --- ROUTE EDIT PROFIL RESEPSIONIS ---
 # --- ROUTE KHUSUS EDIT PROFIL RESEPSIONIS ---
 @app.route('/resepsionis/profile', methods=['GET', 'POST'])
@@ -886,6 +965,7 @@ def edit_resepsionis_profile():
     
     # --- FITUR BOOKING KHUSUS RESEPSIONIS ---
 @app.route('/receptionist/book', methods=['GET', 'POST'])
+@app.route('/receptionist/book', methods=['GET', 'POST'])
 def receptionist_book_appointment():
     if 'email' not in session or session.get('role') != 'resepsionis':
         return redirect(url_for('login'))
@@ -893,11 +973,10 @@ def receptionist_book_appointment():
     cur = mysql.connection.cursor()
 
     if request.method == 'POST':
-        # 1. Ambil data dari Form
+        # ... (Bagian POST Simpan Data TETAP SAMA seperti sebelumnya) ...
         pasien_id = request.form['pasien_id']
         jadwal_id = request.form['jadwal_id']
         
-        # 2. Ambil detail dokter & waktu dari tabel Jadwal & Dijadwalkan
         cur.execute("""
             SELECT d.dokter_id, j.hari, j.jam_mulai
             FROM Dijadwalkan d
@@ -909,7 +988,6 @@ def receptionist_book_appointment():
         if jadwal_data:
             dokter_id, hari, jam_mulai = jadwal_data
             
-            # 3. Masukkan ke Database (Booked)
             cur.execute("""
                 INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status)
                 VALUES (%s, %s, %s, CURDATE(), %s, 'booked')
@@ -920,17 +998,23 @@ def receptionist_book_appointment():
             cur.close()
             return redirect(url_for('homepageResepsionis'))
             
-    # --- TAMPILAN HALAMAN (GET) ---
-    # 1. Ambil List Pasien (untuk Dropdown)
+    # --- BAGIAN INI YANG BERUBAH (GET) ---
+    
+    # 1. Ambil List Pasien
     cur.execute("SELECT pasien_id, nama_depan, nama_belakang, email FROM Pasien")
     patients = cur.fetchall()
     
-    # 2. Ambil List Jadwal Dokter (untuk Dropdown)
+    # 2. Ambil List Jadwal Dokter YANG TERSEDIA (Available)
+    # Kita filter menggunakan 'NOT IN'
+    # Artinya: Ambil jadwal yang ID-nya TIDAK ADA di tabel Appointment dengan tanggal hari ini
     cur.execute("""
         SELECT j.jadwal_id, d.nama_depan, d.nama_belakang, j.hari, j.jam_mulai, j.jam_selesai
         FROM Jadwal_dokter j
         JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
         JOIN Dokter d ON dj.dokter_id = d.dokter_id
+        WHERE j.jadwal_id NOT IN (
+            SELECT jadwal_id FROM Appointment WHERE tanggal = CURDATE()
+        )
         ORDER BY j.hari, j.jam_mulai
     """)
     schedules = cur.fetchall()
@@ -938,32 +1022,6 @@ def receptionist_book_appointment():
 
     return render_template('bookAppointmentResepsionis.html', patients=patients, schedules=schedules)
 
-@app.route('/fix-dokter-password-field')
-def change_dokter_password_length():
-    if 'email' in session:
-        # PENTING: Untuk alasan keamanan, route ini seharusnya hanya bisa diakses oleh admin
-        # atau harus dihapus secepatnya.
-        flash("Telah login. Disarankan keluar sesi sebelum menjalankan perintah ini.", "warning")
-    
-    try:
-        cur = mysql.connection.cursor()
-        
-        # Perintah SQL untuk mengubah tipe data kolom 'password' pada tabel Dokter
-        # Menetapkan panjang VARCHAR ke 255 karakter, yang cukup untuk PBKDF2:SHA256
-        sql_command = "ALTER TABLE Dokter MODIFY password VARCHAR(255);"
-        
-        cur.execute(sql_command)
-        mysql.connection.commit()
-        cur.close()
-        
-        # Setelah perubahan tipe data, coba update password dengan hash yang benar
-        # (Anda bisa memasukkan hash di sini, atau lakukan UPDATE secara terpisah)
-        
-        return "<h1>✅ Tipe data kolom 'password' pada tabel Dokter berhasil diubah menjadi VARCHAR(255).</h1><p>Sekarang silakan ulangi proses UPDATE password Dokter dengan hash lengkap.</p><p>HARAP HAPUS ROUTE INI SECEPATNYA DARI app.py!</p>"
-
-    except Exception as e:
-        mysql.connection.rollback()
-        return f"<h1>❌ Error saat mengubah tipe data:</h1><p>{str(e)}</p>"
 
 if __name__ == '__main__':
     app.run(debug=True)
