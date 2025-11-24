@@ -17,10 +17,18 @@ mysql = MySQL(app)
 
 @app.route('/')
 def home():
+    # Ambil data dokter dari database
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT dokter_id, nama_depan, nama_belakang, tanggal_masuk, status, foto FROM Dokter")
+    doctors = cur.fetchall()
+    cur.close()
+    
+    # Kirim data 'doctors' ke template
     if 'email' in session:
-        return render_template('home.html', email=session['email'])
+        return render_template('home.html', email=session['email'], doctors=doctors)
     else:   
-        return render_template('home.html')   
+        return render_template('home.html', doctors=doctors)
+    
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -138,7 +146,7 @@ def editProfile():
             mysql.connection.commit()
             cur.close()
             flash('Profile updated successfully!', 'success')
-            return redirect(url_for('home'))
+            return redirect(url_for('profile'))
         except Exception as e:
             flash(f'Error updating profile: {str(e)}', 'error')
             return render_template('editProfile.html', email=session['email'])
@@ -178,6 +186,103 @@ def deleteAccount():
     except Exception as e:
         flash(f'Error deleting account: {str(e)}', 'error')
         return redirect(url_for('editProfile'))
+    
+
+@app.route('/profile')
+def profile():
+    # 1. Cek Login
+    if 'email' not in session:
+        return redirect(url_for('login'))
+    
+    email = session['email']
+    cur = mysql.connection.cursor()
+    
+    # 2. Ambil Data Diri Pasien
+    # Mengambil: nama_depan, nama_belakang, email, gender, tgl_lahir, kota, jalan, tgl_daftar
+    cur.execute("""
+        SELECT nama_depan, nama_belakang, email, gender, 
+               tanggal_lahir, Kota, Jalan, tanggal_daftar 
+        FROM Pasien 
+        WHERE email = %s
+    """, (email,))
+    user_data = cur.fetchone()
+    
+    if not user_data:
+        flash('User data not found', 'error')
+        return redirect(url_for('home'))
+
+    # Dictionary agar mudah dipanggil di HTML (user.nama_depan, dll)
+    user_info = {
+        'nama_depan': user_data[0],
+        'nama_belakang': user_data[1],
+        'email': user_data[2],
+        'gender': user_data[3],
+        'tanggal_lahir': user_data[4],
+        'kota': user_data[5],
+        'jalan': user_data[6],
+        'tanggal_daftar': user_data[7]
+    }
+
+    # 3. Ambil Data Telepon Pasien (Bisa lebih dari 1)
+    cur.execute("""
+        SELECT telepon 
+        FROM Pasien_telepon 
+        JOIN Pasien ON Pasien.pasien_id = Pasien_telepon.pasien_id 
+        WHERE Pasien.email = %s
+    """, (email,))
+    phones_data = cur.fetchall()
+    
+    # Ubah list of tuples [('081',), ('082',)] menjadi list biasa ['081', '082']
+    phone_list = [p[0] for p in phones_data]
+    
+    cur.close()
+    return render_template('profile.html', user=user_info, phones=phone_list)
+
+
+@app.route('/appointmentHistory')
+def appointment_history():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+    
+    email = session['email']
+    cur = mysql.connection.cursor()
+    
+    # Query kompleks untuk join Appointment, Dokter, dan Rekam Medis (Left Join agar history tetap muncul meski belum ada rekam medis)
+    cur.execute("""
+        SELECT 
+            a.appointment_id, 
+            a.tanggal, 
+            a.waktu, 
+            a.status, 
+            d.nama_depan, 
+            d.nama_belakang,
+            r.diagnosis,
+            r.description
+        FROM Appointment a
+        JOIN Pasien p ON a.pasien_id = p.pasien_id
+        JOIN Dokter d ON a.dokter_id = d.dokter_id
+        LEFT JOIN Rekam_medis r ON a.appointment_id = r.appointment_id
+        WHERE p.email = %s
+        ORDER BY a.tanggal DESC, a.waktu DESC
+    """, (email,))
+    
+    history_data = cur.fetchall()
+    cur.close()
+    
+    # Format data menjadi list of dictionaries
+    appointments = []
+    for row in history_data:
+        appointments.append({
+            'id': row[0],
+            'tanggal': row[1],
+            'waktu': row[2],
+            'status': row[3],
+            'nama_dokter': f"{row[4]} {row[5]}",
+            'diagnosis': row[6],
+            'deskripsi': row[7]
+        })
+        
+    return render_template('appointmentHistory.html', appointments=appointments)
         
 # Modul Dokter 
 @app.route('/jadwal/add', methods=['GET', 'POST'])

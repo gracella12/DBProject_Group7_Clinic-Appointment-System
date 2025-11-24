@@ -66,6 +66,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 grid-rows-2 gap-6 h-auto md:h-[600px]">
+            
             <div class="md:col-span-2 row-span-1 bg-[#161B22] rounded-[2rem] p-8 relative overflow-hidden group border border-[#5483B3]/20 hover:border-[#5483B3]/50 transition-all duration-300 hover:shadow-[0_0_40px_rgba(84,131,179,0.15)]">
                 <div class="relative z-10 flex flex-col h-full justify-between">
                     <div>
@@ -86,7 +87,7 @@
                 <div class="relative z-10">
                     <h3 class="text-xl font-bold text-white mb-2">Find Doctor</h3>
                     <p class="text-[#C1E8FF]/70 text-sm">Browse our top specialists.</p>
-                    <a href="{{ url_for('display_dokter') }}" class="mt-4 inline-block px-4 py-2 rounded-lg bg-[#5483B3] text-white text-sm font-bold hover:bg-white hover:text-[#052659] transition-colors">View All</a>
+                    <a href="#doctors" class="mt-4 inline-block px-4 py-2 rounded-lg bg-[#5483B3] text-white text-sm font-bold hover:bg-white hover:text-[#052659] transition-colors">View All</a>
                 </div>
                 <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop" class="absolute bottom-0 right-0 w-32 h-32 object-cover rounded-tl-2xl border-t-4 border-l-4 border-[#0B0E14] group-hover:scale-110 transition-transform">
             </div>
@@ -105,8 +106,8 @@
                         <span class="px-3 py-1 rounded-full bg-[#5483B3]/20 text-[#5483B3] text-xs font-bold uppercase tracking-wider mb-2 inline-block">Personal</span>
                         <h3 class="text-2xl font-bold text-white mb-2">My Profile & Records</h3>
                         <p class="text-[#7DA0CA] mb-6">Update your personal information and keep track of your medical history.</p>
-                        <a href="{{ url_for('editProfile') }}" class="px-6 py-3 rounded-xl bg-white text-[#021024] font-bold text-sm hover:bg-[#C1E8FF] transition-colors">
-                            Edit Profile
+                        <a href="{{ url_for('profile') }}" class="px-6 py-3 rounded-xl bg-white text-[#021024] font-bold text-sm hover:bg-[#C1E8FF] transition-colors">
+                            View Profile
                         </a>
                     </div>
                     <div class="w-full md:w-1/3 h-32 md:h-full bg-[#052659]/50 rounded-xl relative overflow-hidden flex items-center justify-center">
@@ -125,7 +126,7 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
+    <div id="about" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24 scroll-mt-24">
         <div class="bg-[#161B22] rounded-[2.5rem] p-8 md:p-12 border border-[#5483B3]/10 relative overflow-hidden">
             <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-[#052659] opacity-20 blur-[100px] rounded-full -z-10"></div>
 
@@ -168,7 +169,7 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
+    <div id="doctors" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24 scroll-mt-24">
         <div class="flex justify-between items-end mb-8">
             <div>
                 <h2 class="text-3xl font-bold text-white">Our Doctors</h2>
@@ -177,120 +178,67 @@
         </div>
 
         <div class="flex overflow-x-auto gap-6 pb-8 snap-x scrollbar-hide">
-            
-            <div class="min-w-[280px] bg-[#161B22] rounded-3xl p-4 border border-[#5483B3]/10 snap-center hover:-translate-y-2 transition-transform duration-300">
-                <div class="h-64 rounded-2xl overflow-hidden mb-4 relative">
-                    <img src="{{ url_for('static', filename='images/doctor1.jpg') }}" class="w-full h-full object-cover object-top" alt="Dr. Sarah">
-                    <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#161B22] to-transparent"></div>
-                </div>
-                <h3 class="text-xl font-bold text-white">Dr. Rafathin Ardian</h3>
-                <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
-                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Available Today
-                </div>
-            </div>
+            {% if doctors %}
+                {% for doctor in doctors %}
+                <div class="min-w-[280px] bg-[#161B22] rounded-3xl p-4 border border-[#5483B3]/10 snap-center hover:-translate-y-2 transition-transform duration-300">
+                    <div class="h-64 rounded-2xl overflow-hidden mb-4 relative group">
+                        
+                        {% set foto_file = doctor[5] if doctor[5] else 'default.jpg' %}
+                        
+                        <img src="{{ url_for('static', filename='images/' ~ foto_file) }}" 
+                             class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" 
+                             alt="Dr. {{ doctor[1] }}"
+                             onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default.jpg') }}';">
 
-            <div class="min-w-[280px] bg-[#161B22] rounded-3xl p-4 border border-[#5483B3]/10 snap-center hover:-translate-y-2 transition-transform duration-300">
-                <div class="h-64 rounded-2xl overflow-hidden mb-4 relative">
-                    <img src="{{ url_for('static', filename='images/doctor2.jpg') }}" class="w-full h-full object-cover object-top" alt="Dr. James">
-                    <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#161B22] to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#161B22] to-transparent"></div>
+                    </div>
+                    
+                    <h3 class="text-xl font-bold text-white">Dr. {{ doctor[1] }} {{ doctor[2] }}</h3>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
+                        <span class="w-2 h-2 rounded-full {% if doctor[4] == 'Active' %}bg-green-500{% else %}bg-red-500{% endif %}"></span> 
+                        {{ doctor[4] }}
+                    </div>
                 </div>
-                <h3 class="text-xl font-bold text-white">Dr. James Wilson</h3>
-                <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
-                    <span class="w-2 h-2 rounded-full bg-yellow-500"></span> Book for Tomorrow
+                {% endfor %}
+            {% else %}
+                <div class="w-full text-center py-10 text-gray-500">
+                    <p>No doctors available at the moment.</p>
                 </div>
-            </div>
-
-            <div class="min-w-[280px] bg-[#161B22] rounded-3xl p-4 border border-[#5483B3]/10 snap-center hover:-translate-y-2 transition-transform duration-300">
-                <div class="h-64 rounded-2xl overflow-hidden mb-4 relative">
-                    <img src="{{ url_for('static', filename='images/doctor3.jpg') }}" class="w-full h-full object-cover object-top" alt="Dr. Emily">
-                    <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#161B22] to-transparent"></div>
-                </div>
-                <h3 class="text-xl font-bold text-white">Dr. Emily Carter</h3>
-                <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
-                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Available Today
-                </div>
-            </div>
-
-            <div class="min-w-[280px] bg-[#161B22] rounded-3xl p-4 border border-[#5483B3]/10 snap-center hover:-translate-y-2 transition-transform duration-300">
-                <div class="h-64 rounded-2xl overflow-hidden mb-4 relative">
-                    <img src="{{ url_for('static', filename='images/doctor4.jpg') }}" class="w-full h-full object-cover object-top" alt="Dr. Michael">
-                    <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#161B22] to-transparent"></div>
-                </div>
-                <h3 class="text-xl font-bold text-white">Dr. Michael Brown</h3>
-                <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
-                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Available Today
-                </div>
-            </div>
-
-            <div class="min-w-[280px] bg-[#161B22] rounded-3xl p-4 border border-[#5483B3]/10 snap-center hover:-translate-y-2 transition-transform duration-300">
-                <div class="h-64 rounded-2xl overflow-hidden mb-4 relative">
-                    <img src="{{ url_for('static', filename='images/doctor5.jpg') }}" class="w-full h-full object-cover object-top" alt="Dr. David">
-                    <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#161B22] to-transparent"></div>
-                </div>
-                <h3 class="text-xl font-bold text-white">Dr. David Kim</h3>
-                <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
-                    <span class="w-2 h-2 rounded-full bg-red-500"></span> Fully Booked
-                </div>
-            </div>
-
+            {% endif %}
         </div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
-        <div class="grid md:grid-cols-2 gap-8">
-            
-            <div class="bg-[#052659] rounded-[2.5rem] p-8 md:p-12 flex flex-col justify-between relative overflow-hidden">
-                <div class="relative z-10">
-                    <h2 class="text-3xl font-bold text-white mb-4">Get in Touch</h2>
-                    <p class="text-[#C1E8FF] mb-8">Have questions about our services or need emergency assistance? We are here to help.</p>
-                    
-                    <div class="space-y-6">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-[#5483B3]/20 flex items-center justify-center text-[#5483B3]">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-400">Emergency Line</p>
-                                <p class="text-white font-bold text-lg">(0274) 123-4567</p>
-                            </div>
+        <div class="w-full">
+            <div class="bg-[#052659] rounded-[2.5rem] p-8 md:p-12 flex flex-col md:flex-row justify-between items-center relative overflow-hidden w-full">
+                <div class="relative z-10 w-full md:w-1/2 mb-8 md:mb-0">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Get in Touch</h2>
+                    <p class="text-[#C1E8FF]">Have questions about our services or need emergency assistance? We are here to help 24/7.</p>
+                </div>
+                
+                <div class="relative z-10 w-full md:w-auto flex flex-col md:flex-row gap-8 md:gap-12">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#5483B3]/20 flex items-center justify-center text-[#5483B3] shrink-0">
+                            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                         </div>
-                        
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-[#5483B3]/20 flex items-center justify-center text-[#5483B3]">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-400">Email Support</p>
-                                <p class="text-white font-bold text-lg">help@mayoclinic.com</p>
-                            </div>
+                        <div>
+                            <p class="text-sm text-gray-400">Emergency Line</p>
+                            <p class="text-white font-bold text-xl">(0274) 123-4567</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#5483B3]/20 flex items-center justify-center text-[#5483B3] shrink-0">
+                            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-400">Email Support</p>
+                            <p class="text-white font-bold text-xl">help@mayoclinic.com</p>
                         </div>
                     </div>
                 </div>
-                
                 <div class="absolute bottom-0 right-0 w-64 h-64 bg-[#2F80ED] opacity-10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
             </div>
-
-            <div class="bg-[#161B22] rounded-[2.5rem] p-8 md:p-12 border border-[#5483B3]/10">
-                <h3 class="text-2xl font-bold text-white mb-6">Send Message</h3>
-                <form action="#" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Full Name</label>
-                        <input type="text" class="w-full bg-[#0B0E14] border border-gray-800 rounded-xl px-4 py-3 text-white focus:border-[#5483B3] focus:ring-1 focus:ring-[#5483B3] outline-none transition-all" placeholder="John Doe">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Email Address</label>
-                        <input type="email" class="w-full bg-[#0B0E14] border border-gray-800 rounded-xl px-4 py-3 text-white focus:border-[#5483B3] focus:ring-1 focus:ring-[#5483B3] outline-none transition-all" placeholder="john@example.com">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Message</label>
-                        <textarea rows="4" class="w-full bg-[#0B0E14] border border-gray-800 rounded-xl px-4 py-3 text-white focus:border-[#5483B3] focus:ring-1 focus:ring-[#5483B3] outline-none transition-all" placeholder="How can we help you?"></textarea>
-                    </div>
-                    <button class="w-full bg-[#2F80ED] text-white font-bold py-4 rounded-xl hover:bg-[#2563eb] transition-colors mt-2">
-                        Send Message
-                    </button>
-                </form>
-            </div>
-
         </div>
     </div>
 
