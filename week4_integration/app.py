@@ -12,11 +12,11 @@ app = Flask(__name__)
 app.secret_key ='membuatLogin'
 
 # GANTI BARIS 14-19 DENGAN INI:
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''  # Kosongkan jika tidak ada password
-app.config['MYSQL_DB'] = 'DBProject' # Pastikan nama DB ini sesuai di phpMyAdmin
-app.config['MYSQL_PORT'] = 3306
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
+app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD') or '' # Jaga-jaga kalau kosong
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
+app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT'))
 
 # KHUSUS PENGGUNA MAC (Hapus tanda pagar # di depannya)
 # Cek apakah kamu install XAMPP? Jika iya, aktifkan baris ini:
@@ -26,13 +26,11 @@ mysql = MySQL(app)
 
 @app.route('/')
 def home():
-    # Ambil data dokter dari database untuk ditampilkan di halaman depan (untuk pasien/umum)
     cur = mysql.connection.cursor()
     cur.execute("SELECT dokter_id, nama_depan, nama_belakang, tanggal_masuk, status, foto FROM Dokter")
     doctors = cur.fetchall()
     cur.close()
     
-    # Logika Redirect Berdasarkan Role
     if 'email' in session:
         role = session.get('role')
         
@@ -421,9 +419,7 @@ def dokter_home():
 
 @app.route('/dokter/dashboard')
 def dokter_dashboard():
-    """Doctor dashboard integrated with `newHomepageDokter.html`.
-    Shows doctor's name, their schedules and today's appointments.
-    """
+
     if 'email' not in session or session.get('role') != 'dokter':
         return redirect(url_for('login'))
 
@@ -730,7 +726,7 @@ def book_appointment(jadwal_id):
     cur.close()
 
     flash("Appointment berhasil dibuat!", "success")
-    return redirect(url_for('display_appointment'))
+    return redirect("makeAppointment.html")
 
 @app.route('/appointment')
 def display_appointment():
