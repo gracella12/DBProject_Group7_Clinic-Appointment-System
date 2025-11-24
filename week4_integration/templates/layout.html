@@ -34,21 +34,54 @@
                 <div class="flex items-center gap-4">
                     {% if session.get('email') %}
                         <div class="hidden sm:flex flex-col items-end mr-2">
-                            <span class="text-sm font-bold text-white">{{ session.get('email').split('@')[0] }}</span>
-                            <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Patient</span>
+                            <span class="text-sm font-bold text-white">
+                                {{ session.get('nama_depan') or session.get('email').split('@')[0] }}
+                            </span>
+                            <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">
+                                {% if session.get('role') == 'resepsionis' %}
+                                RECEPTIONIST
+                                {% elif session.get('role') == 'dokter' %}
+                                DOCTOR
+                                {% else %}
+                                PATIENT
+                                {% endif %}
+                            </span>
                         </div>
                         
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" class="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 p-[2px] cursor-pointer transition-transform active:scale-95">
                                 <div class="h-full w-full rounded-full bg-[#0B0E14] flex items-center justify-center hover:bg-transparent transition-colors">
-                                    <span class="font-bold text-xs">{{ session.get('email')[0].upper() }}</span>
+                                    <span class="font-bold text-xs">
+                                        {# 1. Coba ambil nama depan. Jika kosong/None, ambil email. Jika masih kosong, pakai 'U' #}
+                                        {% set nama_untuk_inisial = session.get('nama_depan') or session.get('email') or 'U' %}
+                                    
+                                        {# 2. Ambil huruf pertama (indeks 0) dan jadikan huruf kapital #}
+                                        {{ nama_untuk_inisial[0] | upper }}
+                                    </span>
                                 </div>
                             </button>
 
                             <div x-show="open" @click.outside="open = false" 
                                  class="absolute right-0 mt-2 w-48 bg-[#161B22] rounded-xl shadow-xl border border-gray-800 py-1 z-50"
                                  style="display: none;">
-                                <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white">View Profile</a>
+                            {% if session.get('role') == 'resepsionis' %}
+                            <a href="{{ url_for('edit_resepsionis_profile') }}"
+                                class="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white">
+                                View Profile
+                            </a>
+                            
+                            {% elif session.get('role') == 'dokter' %}
+                            <a href="{{ url_for('dokter_dashboard') }}"
+                                class="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white">
+                                View Profile
+                            </a>
+                            
+                            {% else %}
+                            <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white">
+                                View Profile
+                            </a>
+                            {% endif %}
+
                                 <div class="border-t border-gray-800 my-1"></div>
                                 <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300">Log out</a>
                             </div>

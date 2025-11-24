@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="min-h-screen w-full bg-[#021024] flex items-center justify-center p-6 pt-24">
+
+  <div
+    class="w-full max-w-2xl bg-[#052659] rounded-3xl shadow-2xl border border-[#5483B3]/20 overflow-hidden relative animate-fade-in-up">
+
+    <div
+      class="absolute top-0 right-0 w-64 h-64 bg-[#5483B3]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none">
+    </div>
+    <div
+      class="absolute bottom-0 left-0 w-64 h-64 bg-[#7DA0CA]/10 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none">
+    </div>
+
+    <div class="p-8 border-b border-[#5483B3]/20 bg-[#052659]/50 backdrop-blur-sm relative z-10">
+      <div class="flex items-center gap-4 mb-2">
+        <a href="{{ url_for('homepageResepsionis') }}"
+          class="p-2 rounded-lg bg-[#021024] text-[#7DA0CA] hover:text-white hover:bg-[#5483B3] transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+            </path>
+          </svg>
+        </a>
+        <h2 class="text-3xl font-bold text-white tracking-tight">Book Appointment</h2>
+      </div>
+      <p class="text-[#7DA0CA] pl-14">Create a new booking for a registered patient manually.</p>
+    </div>
+
+    <div class="p-8 relative z-10">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="mb-6 space-y-2">
+        {% for category, message in messages %}
+        <div class="p-4 rounded-xl text-sm font-medium 
+                            {% if category == 'success' %} bg-green-500/10 text-green-400 border border-green-500/20
+                            {% else %} bg-red-500/10 text-red-400 border border-red-500/20 {% endif %}">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <form action="{{ url_for('receptionist_book_appointment') }}" method="POST" class="space-y-6">
+
+        <div class="space-y-2">
+          <label for="pasien_id" class="text-sm font-medium text-[#C1E8FF] uppercase tracking-wider ml-1">Select
+            Patient</label>
+          <div class="relative">
+            <select name="pasien_id" id="pasien_id" required
+              class="w-full appearance-none px-5 py-4 rounded-xl bg-[#021024] border border-[#5483B3]/30 text-white focus:outline-none focus:border-[#7DA0CA] focus:ring-1 focus:ring-[#7DA0CA] transition-all cursor-pointer">
+              <option value="" disabled selected>-- Choose a Registered Patient --</option>
+              {% for p in patients %}
+              <option value="{{ p[0] }}">
+                {{ p[1] }} {{ p[2] }} &mdash; {{ p[3] }}
+              </option>
+              {% endfor %}
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#5483B3]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs text-[#5483B3] ml-1">*Only registered patients appear here.</p>
+        </div>
+
+        <div class="space-y-2">
+          <label for="jadwal_id" class="text-sm font-medium text-[#C1E8FF] uppercase tracking-wider ml-1">Select Doctor
+            Schedule</label>
+          <div class="relative">
+            <select name="jadwal_id" id="jadwal_id" required
+              class="w-full appearance-none px-5 py-4 rounded-xl bg-[#021024] border border-[#5483B3]/30 text-white focus:outline-none focus:border-[#7DA0CA] focus:ring-1 focus:ring-[#7DA0CA] transition-all cursor-pointer">
+              <option value="" disabled selected>-- Choose Available Schedule --</option>
+              {% for s in schedules %}
+              <option value="{{ s[0] }}">
+                Dr. {{ s[1] }} {{ s[2] }} | {{ s[3] }} ({{ s[4] }} - {{ s[5] }})
+              </option>
+              {% endfor %}
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#5483B3]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4">
+          <button type="submit"
+            class="w-full py-4 bg-gradient-to-r from-[#5483B3] to-[#7DA0CA] text-[#021024] font-bold text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2">
+            <span>Confirm Appointment</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </button>
+          <div class="text-center mt-4">
+            <a href="{{ url_for('homepageResepsionis') }}"
+              class="text-sm text-[#5483B3] hover:text-[#7DA0CA] transition">Cancel and return to dashboard</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
