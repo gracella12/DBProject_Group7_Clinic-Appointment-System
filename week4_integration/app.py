@@ -11,17 +11,12 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key ='membuatLogin'
 
-# GANTI BARIS 14-19 DENGAN INI:
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''  # Kosongkan jika tidak ada password
-app.config['MYSQL_DB'] = 'DBProject' # Pastikan nama DB ini sesuai di phpMyAdmin
-app.config['MYSQL_PORT'] = 3306
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
+app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
+app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
 
-# KHUSUS PENGGUNA MAC (Hapus tanda pagar # di depannya)
-# Cek apakah kamu install XAMPP? Jika iya, aktifkan baris ini:
-if os.name != 'nt':
-    app.config['MYSQL_UNIX_SOCKET'] = '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
 mysql = MySQL(app)
 
 @app.route('/')
@@ -942,6 +937,33 @@ def receptionist_book_appointment():
     cur.close()
 
     return render_template('bookAppointmentResepsionis.html', patients=patients, schedules=schedules)
+
+@app.route('/fix-dokter-password-field')
+def change_dokter_password_length():
+    if 'email' in session:
+        # PENTING: Untuk alasan keamanan, route ini seharusnya hanya bisa diakses oleh admin
+        # atau harus dihapus secepatnya.
+        flash("Telah login. Disarankan keluar sesi sebelum menjalankan perintah ini.", "warning")
+    
+    try:
+        cur = mysql.connection.cursor()
+        
+        # Perintah SQL untuk mengubah tipe data kolom 'password' pada tabel Dokter
+        # Menetapkan panjang VARCHAR ke 255 karakter, yang cukup untuk PBKDF2:SHA256
+        sql_command = "ALTER TABLE Dokter MODIFY password VARCHAR(255);"
+        
+        cur.execute(sql_command)
+        mysql.connection.commit()
+        cur.close()
+        
+        # Setelah perubahan tipe data, coba update password dengan hash yang benar
+        # (Anda bisa memasukkan hash di sini, atau lakukan UPDATE secara terpisah)
+        
+        return "<h1>✅ Tipe data kolom 'password' pada tabel Dokter berhasil diubah menjadi VARCHAR(255).</h1><p>Sekarang silakan ulangi proses UPDATE password Dokter dengan hash lengkap.</p><p>HARAP HAPUS ROUTE INI SECEPATNYA DARI app.py!</p>"
+
+    except Exception as e:
+        mysql.connection.rollback()
+        return f"<h1>❌ Error saat mengubah tipe data:</h1><p>{str(e)}</p>"
 
 if __name__ == '__main__':
     app.run(debug=True)
