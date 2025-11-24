@@ -1,22 +1,24 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="flex h-screen bg-[#021024] text-[#C1E8FF] font-sans overflow-hidden">
+<div class="flex h-screen w-full bg-[#021024] text-[#C1E8FF] font-sans overflow-hidden fixed inset-0 pt-16">
 
-  <aside class="w-64 bg-[#052659] border-r border-[#5483B3]/20 hidden md:flex flex-col shadow-2xl z-20">
-    <div class="p-8 flex items-center gap-3">
-      <div class="w-10 h-10 rounded-lg bg-[#7DA0CA] flex items-center justify-center text-[#021024] font-bold text-xl">
-        M
-      </div>
+  <aside
+    class="w-64 h-full bg-[#052659] border-r border-[#5483B3]/20 hidden md:flex flex-col shadow-2xl z-20 flex-shrink-0 relative">
+
+    <div class="p-6 flex items-center gap-3 border-b border-[#5483B3]/10 bg-[#021024]/30">
+      <img src="{{ url_for('static', filename='images/logodark.png') }}" alt="Mayo Clinic"
+        class="h-10 w-auto object-contain">
+
       <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight leading-none">MAYO</h1>
-        <span class="text-sm text-[#7DA0CA] tracking-widest uppercase">Clinic</span>
+        <h1 class="text-xl font-bold text-white tracking-tight leading-none">MAYO</h1>
+        <span class="text-[25px] text-[#7DA0CA] tracking-widest uppercase font-semibold">Clinic</span>
       </div>
     </div>
 
-    <nav class="flex-1 px-4 space-y-3 mt-4">
+    <nav class="flex-1 px-4 space-y-3 mt-6 overflow-y-auto">
       <a href="#"
-        class="flex items-center gap-3 px-4 py-3 bg-[#5483B3]/20 text-white rounded-xl border border-[#5483B3]/30 shadow-lg shadow-[#5483B3]/10 transition-all">
+        class="flex items-center gap-3 px-4 py-3 bg-[#5483B3]/20 text-white rounded-xl border border-[#5483B3]/30 shadow-lg shadow-[#5483B3]/10">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
@@ -26,8 +28,8 @@
       </a>
 
       <a href="{{ url_for('display_dokter') }}"
-        class="flex items-center gap-3 px-4 py-3 text-[#C1E8FF] hover:bg-[#021024] hover:text-white rounded-xl transition-all group">
-        <svg class="w-5 h-5 group-hover:text-[#7DA0CA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        class="flex items-center gap-3 px-4 py-3 text-[#C1E8FF] hover:bg-[#021024] hover:text-white rounded-xl transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
         </svg>
@@ -35,12 +37,21 @@
       </a>
 
       <a href="{{ url_for('display_jadwal') }}"
-        class="flex items-center gap-3 px-4 py-3 text-[#C1E8FF] hover:bg-[#021024] hover:text-white rounded-xl transition-all group">
-        <svg class="w-5 h-5 group-hover:text-[#7DA0CA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        class="flex items-center gap-3 px-4 py-3 text-[#C1E8FF] hover:bg-[#021024] hover:text-white rounded-xl transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
         </svg>
         <span>Schedules</span>
+      </a>
+
+      <a href="{{ url_for('register') }}"
+        class="flex items-center gap-3 px-4 py-3 text-[#C1E8FF] hover:bg-[#021024] hover:text-white rounded-xl transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+        </svg>
+        <span>Register Patient</span>
       </a>
     </nav>
 
@@ -56,57 +67,28 @@
     </div>
   </aside>
 
-  <main class="flex-1 flex flex-col overflow-y-auto relative">
-    <div
-      class="absolute top-0 left-0 w-full h-80 bg-gradient-to-b from-[#7DA0CA]/10 to-transparent pointer-events-none">
-    </div>
+  <main class="flex-1 h-full flex flex-col overflow-y-auto relative bg-[#021024]">
 
-    <header class="flex items-center justify-between px-10 py-8 z-10">
+    <header
+      class="flex items-center justify-between px-12 py-8 z-10 sticky top-0 bg-[#021024]/95 backdrop-blur-md border-b border-[#5483B3]/10">
       <div>
         <h2 class="text-3xl font-bold text-white drop-shadow-md">Receptionist Portal</h2>
         <p class="text-[#7DA0CA] mt-1">Manage patient flow and daily appointments.</p>
       </div>
-      <div class="flex items-center gap-4">
-        <div class="text-right hidden sm:block">
-          <p class="text-white font-medium">{{ session['email'] }}</p>
-          <p class="text-xs text-[#5483B3] uppercase tracking-wider">Receptionist</p>
-        </div>
-        <div
-          class="w-10 h-10 rounded-full bg-gradient-to-br from-[#7DA0CA] to-[#5483B3] flex items-center justify-center text-[#021024] font-bold shadow-lg shadow-[#7DA0CA]/20">
-          R
-        </div>
-      </div>
     </header>
 
-    <div class="px-10 pb-12 space-y-8 z-10">
+    <div class="px-12 pb-12 space-y-8 z-10 mt-6">
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div
-          class="bg-[#052659] p-6 rounded-2xl border border-[#5483B3]/20 shadow-lg hover:border-[#7DA0CA]/50 transition-all group relative overflow-hidden">
-          <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <svg class="w-24 h-24 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-              <path fill-rule="evenodd"
-                d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                clip-rule="evenodd" />
-            </svg>
-          </div>
+        <div class="bg-[#052659] p-6 rounded-2xl border border-[#5483B3]/20 shadow-lg relative overflow-hidden">
           <p class="text-[#7DA0CA] text-sm font-medium mb-1 uppercase tracking-wider">Today's Appointments</p>
           <h3 class="text-4xl font-bold text-white">{{ today_count }}</h3>
           <div class="mt-4 flex items-center gap-2 text-xs text-[#C1E8FF]">
-            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-            System Updated
+            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> System Updated
           </div>
         </div>
 
-        <div
-          class="bg-[#052659] p-6 rounded-2xl border border-[#5483B3]/20 shadow-lg hover:border-[#7DA0CA]/50 transition-all group relative overflow-hidden">
-          <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <svg class="w-24 h-24 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-            </svg>
-          </div>
+        <div class="bg-[#052659] p-6 rounded-2xl border border-[#5483B3]/20 shadow-lg relative overflow-hidden">
           <p class="text-[#7DA0CA] text-sm font-medium mb-1 uppercase tracking-wider">Active Doctors</p>
           <h3 class="text-4xl font-bold text-white">{{ active_docs }}</h3>
           <div class="mt-4 flex items-center gap-2 text-xs text-[#C1E8FF]">
@@ -117,11 +99,11 @@
         <div
           class="bg-gradient-to-br from-[#5483B3] to-[#7DA0CA] p-6 rounded-2xl shadow-lg flex flex-col justify-between text-[#021024]">
           <div>
-            <h3 class="text-xl font-bold">New Appointment</h3>
-            <p class="opacity-80 text-sm mt-1">Register a walk-in patient or new booking.</p>
+            <h3 class="text-xl font-bold">Book Appointment</h3>
+            <p class="opacity-80 text-sm mt-1">Create booking for registered patient.</p>
           </div>
-          <a href="#"
-            class="mt-4 w-full py-3 bg-[#021024]/90 hover:bg-[#021024] text-white text-center font-semibold rounded-xl transition-all shadow-lg">
+          <a href="{{ url_for('receptionist_book_appointment') }}"
+            class="mt-4 w-full py-3 bg-[#021024]/90 hover:bg-[#021024] text-white text-center font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
             + Book Now
           </a>
         </div>
@@ -135,7 +117,7 @@
           {% if messages %}
           <div class="flex gap-2">
             {% for category, message in messages %}
-            <span class="text-xs px-3 py-1 rounded bg-blue-500 text-white">{{ message }}</span>
+            <span class="text-xs px-3 py-1 rounded bg-blue-500 text-white animate-fade-in-up">{{ message }}</span>
             {% endfor %}
           </div>
           {% endif %}
@@ -143,62 +125,45 @@
         </div>
 
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
+          <table class="w-full text-center border-collapse">
             <thead>
               <tr class="text-[#7DA0CA] text-xs uppercase bg-[#021024]/30 border-b border-[#5483B3]/10">
-                <th class="px-6 py-4 font-semibold tracking-wider">Date & Time</th>
-                <th class="px-6 py-4 font-semibold tracking-wider">Patient</th>
-                <th class="px-6 py-4 font-semibold tracking-wider">Assigned Doctor</th>
-                <th class="px-6 py-4 font-semibold tracking-wider">Status</th>
-                <th class="px-6 py-4 font-semibold tracking-wider text-right">Actions</th>
+                <th class="px-6 py-4 font-semibold tracking-wider text-center">Date & Time</th>
+                <th class="px-6 py-4 font-semibold tracking-wider text-center">Patient</th>
+                <th class="px-6 py-4 font-semibold tracking-wider text-center">Assigned Doctor</th>
+                <th class="px-6 py-4 font-semibold tracking-wider text-center">Status</th>
+                <th class="px-6 py-4 font-semibold tracking-wider text-center">Actions</th>
               </tr>
             </thead>
             <tbody class="text-sm divide-y divide-[#5483B3]/10">
               {% if appointments %}
               {% for app in appointments %}
-              <tr class="hover:bg-[#5483B3]/5 transition-colors group">
-                <td class="px-6 py-4 text-[#C1E8FF]">
+              <tr class="hover:bg-[#5483B3]/5 transition-colors">
+                <td class="px-6 py-4 text-[#C1E8FF] text-center">
                   <div class="font-medium">{{ app.date }}</div>
                   <div class="text-xs text-[#7DA0CA]">{{ app.time }}</div>
                 </td>
-                <td class="px-6 py-4">
+                <td class="px-6 py-4 text-center">
                   <div class="font-medium text-white">{{ app.patient_name }}</div>
                   <div class="text-xs text-[#5483B3]">{{ app.patient_contact }}</div>
                 </td>
-                <td class="px-6 py-4 text-[#7DA0CA] font-medium">
-                  {{ app.doctor_name }}
-                </td>
-                <td class="px-6 py-4">
-                  {% if app.status == 'booked' %}
+                <td class="px-6 py-4 text-[#7DA0CA] font-medium text-center">{{ app.doctor_name }}</td>
+                <td class="px-6 py-4 text-center">
                   <span
-                    class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-                    Booked
-                  </span>
-                  {% elif app.status == 'completed' %}
-                  <span
-                    class="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
-                    Completed
-                  </span>
-                  {% else %}
-                  <span
-                    class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/10 text-gray-400 border border-gray-500/20">
+                    class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/10 text-gray-400 border border-gray-500/20 block w-fit mx-auto">
                     {{ app.status }}
                   </span>
-                  {% endif %}
                 </td>
-                <td class="px-6 py-4 text-right space-x-2">
-                  <a href="#" class="text-[#7DA0CA] hover:text-white transition text-xs font-medium">Edit</a>
+                <td class="px-6 py-4 text-center">
                   <a href="{{ url_for('delete_appointment', id=app.id) }}"
                     class="text-red-400 hover:text-red-300 transition text-xs font-medium"
-                    onclick="return confirm('Cancel this appointment?');">Cancel</a>
+                    onclick="return confirm('Cancel?');">Cancel</a>
                 </td>
               </tr>
               {% endfor %}
               {% else %}
               <tr>
-                <td colspan="5" class="px-6 py-12 text-center text-[#5483B3] italic">
-                  No appointments found.
-                </td>
+                <td colspan="5" class="px-6 py-12 text-center text-[#5483B3] italic">No appointments found.</td>
               </tr>
               {% endif %}
             </tbody>

@@ -838,5 +838,110 @@ def homepageResepsionis():
                            today_count=today_appointments,
                            active_docs=active_doctors)
 
+# --- ROUTE EDIT PROFIL RESEPSIONIS ---
+# --- ROUTE KHUSUS EDIT PROFIL RESEPSIONIS ---
+@app.route('/resepsionis/profile', methods=['GET', 'POST'])
+def edit_resepsionis_profile():
+    # 1. Cek Login & Role
+    if 'email' not in session or session.get('role') != 'resepsionis':
+        return redirect(url_for('login'))
+    
+    email = session['email']
+    cur = mysql.connection.cursor()
+    
+    # 2. Handle Update Data (POST)
+    if request.method == 'POST':
+        nama_depan = request.form['nama_depan']
+        nama_belakang = request.form['nama_belakang']
+        
+        try:
+            # Update Nama ke Tabel Resepsionis
+            cur.execute("""
+                UPDATE Resepsionis 
+                SET nama_depan = %s, nama_belakang = %s 
+                WHERE email = %s
+            """, (nama_depan, nama_belakang, email))
+            mysql.connection.commit()
+            
+            # Update Session agar nama di pojok kanan dashboard langsung berubah
+            session['nama_depan'] = nama_depan
+            
+            flash('Profile successfully updated!', 'success')
+            return redirect(url_for('edit_resepsionis_profile'))
+            
+        except Exception as e:
+            flash(f'Error updating profile: {str(e)}', 'error')
+
+    # 3. Handle Tampilan Awal (GET)
+    # Kita cari data di tabel RESEPSIONIS, bukan Pasien
+    cur.execute("SELECT nama_depan, nama_belakang, tanggal_masuk FROM Resepsionis WHERE email = %s", (email,))
+    data = cur.fetchone()
+    cur.close()
+
+    if data:
+        resepsionis_data = {
+            'nama_depan': data[0],
+            'nama_belakang': data[1],
+            'tanggal_masuk': data[2]
+        }
+        # Pastikan file HTML ini sudah kamu buat (editProfileResepsionis.html)
+        return render_template('editProfileResepsionis.html', resepsionis=resepsionis_data)
+    else:
+        return redirect(url_for('login'))
+    
+    # --- FITUR BOOKING KHUSUS RESEPSIONIS ---
+@app.route('/receptionist/book', methods=['GET', 'POST'])
+def receptionist_book_appointment():
+    if 'email' not in session or session.get('role') != 'resepsionis':
+        return redirect(url_for('login'))
+    
+    cur = mysql.connection.cursor()
+
+    if request.method == 'POST':
+        # 1. Ambil data dari Form
+        pasien_id = request.form['pasien_id']
+        jadwal_id = request.form['jadwal_id']
+        
+        # 2. Ambil detail dokter & waktu dari tabel Jadwal & Dijadwalkan
+        cur.execute("""
+            SELECT d.dokter_id, j.hari, j.jam_mulai
+            FROM Dijadwalkan d
+            JOIN Jadwal_dokter j ON d.jadwal_id = j.jadwal_id
+            WHERE d.jadwal_id = %s
+        """, (jadwal_id,))
+        jadwal_data = cur.fetchone()
+        
+        if jadwal_data:
+            dokter_id, hari, jam_mulai = jadwal_data
+            
+            # 3. Masukkan ke Database (Booked)
+            cur.execute("""
+                INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status)
+                VALUES (%s, %s, %s, CURDATE(), %s, 'booked')
+            """, (pasien_id, dokter_id, jadwal_id, jam_mulai))
+            
+            mysql.connection.commit()
+            flash('Appointment successfully created for patient!', 'success')
+            cur.close()
+            return redirect(url_for('homepageResepsionis'))
+            
+    # --- TAMPILAN HALAMAN (GET) ---
+    # 1. Ambil List Pasien (untuk Dropdown)
+    cur.execute("SELECT pasien_id, nama_depan, nama_belakang, email FROM Pasien")
+    patients = cur.fetchall()
+    
+    # 2. Ambil List Jadwal Dokter (untuk Dropdown)
+    cur.execute("""
+        SELECT j.jadwal_id, d.nama_depan, d.nama_belakang, j.hari, j.jam_mulai, j.jam_selesai
+        FROM Jadwal_dokter j
+        JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
+        JOIN Dokter d ON dj.dokter_id = d.dokter_id
+        ORDER BY j.hari, j.jam_mulai
+    """)
+    schedules = cur.fetchall()
+    cur.close()
+
+    return render_template('bookAppointmentResepsionis.html', patients=patients, schedules=schedules)
+
 if __name__ == '__main__':
     app.run(debug=True)
