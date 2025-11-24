@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Schedule</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#021024] min-h-screen p-6">
+
+  <header class="flex items-center justify-between p-5 rounded-2xl mb-10 relative">
+
+    <div>
+      <h1 class="text-[#C1E8FF] text-4xl sm:text-5xl font-extrabold absolute left-1/2 transform -translate-x-1/2">
+        Add New Schedule
+      </h1>
+    </div>
+
+    <div>
+      <a href="homepageDokter.html"
+         class="px-6 py-3 bg-[#C1E8FF] text-[#001020] font-semibold rounded-lg shadow hover:bg-[#9BD9FF] transition-all duration-200">
+        Kembali
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg">
+
+    <form action="{{ url_for('add_jadwal') }}" method="POST" class="space-y-6">
+        <div>
+        <label for="dokter_id" class="block text-gray-700 font-medium mb-2">Choose Doctor:</label>
+        <select id="dokter_id" name="dokter_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="" disabled selected>-- Choose Doctor --</option>
+          {% for dokter in dokter_list %}
+            <option value="{{ dokter[0] }}">{{ dokter[1] }} {{ dokter[2] }}</option>
+          {% endfor %}
+        </select>
+        </div>
+        
+        <div>
+        <label for="hari" class="block text-gray-700 font-medium mb-2">Day</label>
+        <select id="hari" name="hari" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="" disabled selected>Choose Day</option>
+          <option value="Senin">Monday</option>
+          <option value="Selasa">Tuesday</option>
+          <option value="Rabu">Wednesday</option>
+          <option value="Kamis">Thursday</option>
+          <option value="Jumat">Friday</option>
+          <option value="Sabtu">Saturday</option>
+          <option value="Minggu">Sunday</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="waktu_mulai" class="block text-gray-700 font-medium mb-2">Start Time:</label>
+        <input type="time" id="waktu_mulai" name="waktu_mulai" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+
+        <div>
+            <label for="waktu_selesai" class="block text-gray-700 font-medium mb-2">End Time:</label>
+            <input type="time" id="waktu_selesai" name="waktu_selesai" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        
+        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition-all duration-200">
+        Save Schedule
+      </button>
+    </form>
+    </main>
+    
+</body>
+</html>
