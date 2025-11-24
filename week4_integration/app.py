@@ -246,16 +246,19 @@ def profile():
     return render_template('profile.html', user=user_info, phones=phone_list)
 
 
-@app.route('/appointmentHistory')
+@app.route('/appointmentHistory', methods=['GET'])
 def appointment_history():
     if 'email' not in session:
         return redirect(url_for('login'))
     
+    # 1. Ambil query pencarian dari parameter URL (misalnya: /appointmentHistory?search_query=flu)
+    search_query = request.args.get('search_query', '').strip()
+    
     email = session['email']
     cur = mysql.connection.cursor()
     
-    # Query kompleks untuk join Appointment, Dokter, dan Rekam Medis (Left Join agar history tetap muncul meski belum ada rekam medis)
-    cur.execute("""
+    # 2. Base SQL Query
+    query = """
         SELECT 
             a.appointment_id, 
             a.tanggal, 
@@ -270,8 +273,29 @@ def appointment_history():
         JOIN Dokter d ON a.dokter_id = d.dokter_id
         LEFT JOIN Rekam_medis r ON a.appointment_id = r.appointment_id
         WHERE p.email = %s
-        ORDER BY a.tanggal DESC, a.waktu DESC
-    """, (email,))
+    """
+    
+    # List parameter untuk eksekusi query
+    params = [email]
+    
+    # 3. Tambahkan filter pencarian jika query ada
+    if search_query:
+        search_term = f"%{search_query}%"
+        # Mencari di Nama Dokter, Diagnosis, atau Deskripsi
+        query += """
+            AND (
+                d.nama_depan LIKE %s OR 
+                d.nama_belakang LIKE %s OR
+                r.diagnosis LIKE %s OR
+                r.description LIKE %s
+            )
+        """
+        params.extend([search_term, search_term, search_term, search_term])
+        
+    # 4. Tambahkan pengurutan
+    query += " ORDER BY a.tanggal DESC, a.waktu DESC"
+    
+    cur.execute(query, tuple(params))
     
     history_data = cur.fetchall()
     cur.close()
@@ -289,7 +313,8 @@ def appointment_history():
             'deskripsi': row[7]
         })
         
-    return render_template('appointmentHistory.html', appointments=appointments)
+    # 5. Kirim query pencarian kembali ke template untuk mempertahankan nilai input
+    return render_template('appointmentHistory.html', appointments=appointments, search_query=search_query)
         
 # Modul Dokter 
 @app.route('/jadwal/add', methods=['GET', 'POST'])

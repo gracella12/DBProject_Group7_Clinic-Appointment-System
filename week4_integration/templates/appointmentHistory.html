@@ -13,7 +13,24 @@
             <p class="text-gray-500">Track your past and upcoming medical visits.</p>
         </div>
 
-        {% if appointments %}
+        <form method="GET" action="{{ url_for('appointment_history') }}" class="mb-4">
+            <div class="input-group flex items-center gap-2">
+                <input type="text" name="search_query" class="form-control flex-grow px-4 py-2 rounded-xl bg-[#161B22] border border-[#5483B3]/20 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5483B3]" 
+                       placeholder="Cari Dokter, Diagnosis, atau Deskripsi..." 
+                       value="{{ search_query if search_query is not none else '' }}">
+                
+                <button class="btn btn-primary px-4 py-2 rounded-xl bg-[#2F80ED] text-white font-semibold hover:bg-[#2563eb] transition-colors" type="submit">
+                    Cari
+                </button>
+                
+                {% if search_query %}
+                    <a href="{{ url_for('appointment_history') }}" class="btn btn-secondary px-4 py-2 rounded-xl bg-gray-700 text-white font-semibold hover:bg-gray-600 transition-colors">
+                        Reset
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+ {% if appointments %}
             <div class="grid gap-4">
                 {% for app in appointments %}
                 <div class="bg-[#161B22] rounded-2xl p-6 border border-[#5483B3]/20 hover:border-[#5483B3]/50 transition-all group">
@@ -61,13 +78,23 @@
         {% else %}
             <div class="text-center py-20 bg-[#161B22] rounded-[2.5rem] border border-dashed border-gray-700">
                 <div class="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-500">
-                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4.3c-.77-1.333-2.694-1.333-3.464 0L3.3 16.3c-.77 1.333.192 3 1.732 3z"/></svg>
                 </div>
-                <h3 class="text-xl font-bold text-white mb-2">No Appointments Yet</h3>
-                <p class="text-gray-500 mb-6">You haven't booked any appointments with our doctors.</p>
-                <a href="{{ url_for('add_jadwal') }}" class="px-6 py-3 rounded-xl bg-[#2F80ED] text-white font-bold hover:bg-[#2563eb] transition-colors inline-block">
-                    Book Now
-                </a>
+                
+                {% if search_query %}
+                    <h3 class="text-xl font-bold text-white mb-2">Pencarian Tidak Ditemukan</h3>
+                    <p class="text-gray-500 mb-6">Tidak ada riwayat janji temu yang cocok dengan **"{{ search_query }}"**.</p>
+                    <a href="{{ url_for('appointment_history') }}" class="px-6 py-3 rounded-xl bg-gray-600 text-white font-bold hover:bg-gray-700 transition-colors inline-block">
+                        Lihat Semua Riwayat
+                    </a>
+                {% else %}
+                    <h3 class="text-xl font-bold text-white mb-2">No Appointments Yet</h3>
+                    <p class="text-gray-500 mb-6">You haven't booked any appointments with our doctors.</p>
+                    <a href="{{ url_for('add_jadwal') }}" class="px-6 py-3 rounded-xl bg-[#2F80ED] text-white font-bold hover:bg-[#2563eb] transition-colors inline-block">
+                        Book Now
+                    </a>
+                {% endif %}
+                
             </div>
         {% endif %}
     </div>
