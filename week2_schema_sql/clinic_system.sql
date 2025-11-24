@@ -117,3 +117,8 @@ CREATE TABLE IF NOT EXISTS Rekam_medis
   PRIMARY KEY (rekam_id),
   FOREIGN KEY (appointment_id) REFERENCES Appointment(appointment_id) ON DELETE CASCADE
 );
+
+-- Update Minggu 4: Tambah Login Resepsionis
+ALTER TABLE Resepsionis
+ADD COLUMN email VARCHAR(100) NOT NULL UNIQUE AFTER nama_belakang,
+ADD COLUMN password VARCHAR(255) NOT NULL AFTER email;
