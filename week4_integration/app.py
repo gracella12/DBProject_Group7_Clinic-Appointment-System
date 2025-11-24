@@ -13,11 +13,11 @@ app = Flask(__name__)
 app.secret_key ='membuatLogin'
 
 # GANTI BARIS 14-19 DENGAN INI:
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''  # Kosongkan jika tidak ada password
-app.config['MYSQL_DB'] = 'DBProject' # Pastikan nama DB ini sesuai di phpMyAdmin
-app.config['MYSQL_PORT'] = 3306
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
+app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD') or '' # Jaga-jaga kalau kosong
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
+app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT'))
 
 # KHUSUS PENGGUNA MAC (Hapus tanda pagar # di depannya)
 # Cek apakah kamu install XAMPP? Jika iya, aktifkan baris ini:
@@ -27,13 +27,11 @@ mysql = MySQL(app)
 
 @app.route('/')
 def home():
-    # Ambil data dokter dari database untuk ditampilkan di halaman depan (untuk pasien/umum)
     cur = mysql.connection.cursor()
     cur.execute("SELECT dokter_id, nama_depan, nama_belakang, tanggal_masuk, status, foto FROM Dokter")
     doctors = cur.fetchall()
     cur.close()
     
-    # Logika Redirect Berdasarkan Role
     if 'email' in session:
         role = session.get('role')
         
@@ -422,9 +420,7 @@ def dokter_home():
 
 @app.route('/dokter/dashboard')
 def dokter_dashboard():
-    """Doctor dashboard integrated with `newHomepageDokter.html`.
-    Shows doctor's name, their schedules and today's appointments.
-    """
+
     if 'email' not in session or session.get('role') != 'dokter':
         return redirect(url_for('login'))
 
@@ -452,14 +448,16 @@ def dokter_dashboard():
 
         # appointments for today
         cur.execute("""
-            SELECT p.nama_depan, a.waktu, a.appointment_id
+            SELECT p.nama_depan, a.waktu, a.appointment_id, a.status
             FROM Appointment a
             JOIN pasien p ON a.pasien_id = p.pasien_id
             WHERE a.dokter_id = %s AND a.tanggal = CURDATE()
             ORDER BY a.waktu
         """, (dokter_id,))
         appt_rows = cur.fetchall()
-        appointments_today = [{'nama': r[0], 'waktu': r[1], 'appointment_id': r[2]} for r in appt_rows]
+        appointments_today = []
+        for r in appt_rows:
+            appointments_today.append({'nama': r[0], 'waktu': r[1], 'appointment_id': r[2], 'status': r[3]})
 
         # upcoming count
         cur.execute("SELECT COUNT(*) FROM Appointment WHERE dokter_id = %s AND tanggal >= CURDATE()", (dokter_id,))
@@ -731,7 +729,52 @@ def book_appointment(jadwal_id):
     cur.close()
 
     flash("Appointment berhasil dibuat!", "success")
-    return redirect(url_for('display_appointment'))
+    return redirect("makeAppointment.html")
+
+
+@app.route('/booking', methods=['POST'])
+def book_appointment_form():
+    # Require pasien login for booking via form
+    if 'email' not in session or session.get('role') != 'pasien':
+        flash('Silakan login sebagai pasien untuk membuat appointment.', 'error')
+        return redirect(url_for('login'))
+
+    pasien_id = session.get('id')
+    dokter_id = request.form.get('dokter_id')
+    jadwal_id = request.form.get('jadwal_id')
+    tanggal = request.form.get('tanggal')
+    patient_name = request.form.get('patient_name')
+
+    if not dokter_id or not jadwal_id or not tanggal:
+        flash('Dokter, jadwal, dan tanggal harus dipilih.', 'error')
+        return redirect(url_for('home'))
+
+    try:
+        cur = mysql.connection.cursor()
+
+        # Get jam_mulai from Jadwal_dokter
+        cur.execute('SELECT jam_mulai FROM Jadwal_dokter WHERE jadwal_id = %s', (jadwal_id,))
+        r = cur.fetchone()
+        waktu = r[0] if r else None
+
+        # Insert appointment with status 'waiting'
+        cur.execute(
+            "INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status) VALUES (%s, %s, %s, %s, %s, %s)",
+            (pasien_id, dokter_id, jadwal_id, tanggal, waktu, 'waiting')
+        )
+        mysql.connection.commit()
+        cur.close()
+
+        flash('Appointment berhasil dibuat dan berstatus waiting.', 'success')
+        return redirect(url_for('display_appointment'))
+
+    except Exception as e:
+        try:
+            mysql.connection.rollback()
+        except:
+            pass
+        flash(f'Error saat membuat appointment: {str(e)}', 'error')
+        return redirect(url_for('home'))
 
 @app.route('/appointment')
 def display_appointment():
