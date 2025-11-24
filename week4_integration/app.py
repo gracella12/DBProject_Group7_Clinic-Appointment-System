@@ -730,6 +730,51 @@ def book_appointment(jadwal_id):
     flash("Appointment berhasil dibuat!", "success")
     return redirect("makeAppointment.html")
 
+
+@app.route('/booking', methods=['POST'])
+def book_appointment_form():
+    # Require pasien login for booking via form
+    if 'email' not in session or session.get('role') != 'pasien':
+        flash('Silakan login sebagai pasien untuk membuat appointment.', 'error')
+        return redirect(url_for('login'))
+
+    pasien_id = session.get('id')
+    dokter_id = request.form.get('dokter_id')
+    jadwal_id = request.form.get('jadwal_id')
+    tanggal = request.form.get('tanggal')
+    patient_name = request.form.get('patient_name')
+
+    if not dokter_id or not jadwal_id or not tanggal:
+        flash('Dokter, jadwal, dan tanggal harus dipilih.', 'error')
+        return redirect(url_for('home'))
+
+    try:
+        cur = mysql.connection.cursor()
+
+        # Get jam_mulai from Jadwal_dokter
+        cur.execute('SELECT jam_mulai FROM Jadwal_dokter WHERE jadwal_id = %s', (jadwal_id,))
+        r = cur.fetchone()
+        waktu = r[0] if r else None
+
+        # Insert appointment with status 'waiting'
+        cur.execute(
+            "INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status) VALUES (%s, %s, %s, %s, %s, %s)",
+            (pasien_id, dokter_id, jadwal_id, tanggal, waktu, 'waiting')
+        )
+        mysql.connection.commit()
+        cur.close()
+
+        flash('Appointment berhasil dibuat dan berstatus waiting.', 'success')
+        return redirect(url_for('display_appointment'))
+
+    except Exception as e:
+        try:
+            mysql.connection.rollback()
+        except:
+            pass
+        flash(f'Error saat membuat appointment: {str(e)}', 'error')
+        return redirect(url_for('home'))
+
 @app.route('/appointment')
 def display_appointment():
     cur = mysql.connection.cursor()
