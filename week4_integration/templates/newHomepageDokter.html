@@ -8,115 +8,217 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 
-<body class="bg-gray-50"> <aside class="fixed top-0 left-0 bottom-0 w-64 h-screen bg-[#052659] flex flex-col justify-between p-6 shadow-xl z-50">
+<body class="bg-gray-50">
+
+    <!-- SIDEBAR -->
+    <aside class="fixed top-0 left-0 bottom-0 w-64 h-screen bg-[#052659] flex flex-col justify-between p-6 shadow-xl z-50">
         
         <div>
             <header class="flex items-center gap-3 mb-10">
                 <div class="w-8 h-8 bg-white rounded flex justify-center text-[#052659] font-bold text-xl">
-                    <img src="{{ url_for('static', filename='images/logobright.jpg') }}" alt="Logo" class="w-6 h-6">
+                    <img src="logobright.jpg" alt="Logo" class="w-6 h-6">
                 </div>
 
                 <div class="flex flex-col">
-                        <h1 class="text-white text-lg font-bold leading-tight">Mayo Clinic</h1>
-                        <p class="text-blue-200 text-xs font-medium tracking-wide">Doctor</p>
+                        <h1 class="text-white text-lg font-bold leading-tight">Klinik Sehat</h1>
+                        <p class="text-blue-200 text-xs font-medium tracking-wide">Dokter Umum</p>
                 </div>
             </header>
 
             <nav>
                 <ul class="space-y-4">
                     <li>
-                        <a href="{{ url_for('dokter_home') }}" class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
+                        <a href="newHomepageDokter.html"
+                           class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
                             <i class='bx bxs-dashboard text-xl'></i>
                             <span class="font-medium">Dashboard</span>
                         </a>
                     </li>
                     
                     <li>
-                        <a href="{{ url_for('display_appointment') }}" class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
+                        <a href="{{ url_for('view_jadwal_dokter') }}"
+                           class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
                             <i class='bx bxs-calendar text-xl'></i>
                             <span class="font-medium">Appointment</span>
                         </a>
                     </li>
 
                     <li>
-                        <a href="{{ url_for('display_rekam') }}" class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
+                        <a href="{{ url_for('view_pasien_dokter') }}"
+                           class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
                             <i class='bx bxs-folder-open text-xl'></i>
-                            <span class="font-medium">Medical Record</span>
+                            <span class="font-medium">Rekam Medis</span>
                         </a>
                     </li>
 
                     <li>
-                        <a href="{{ url_for('edit_dokter', id=session['id']) }}" class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
+                        <a href="editDokter.html"
+                           class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
                             <i class='bx bxs-user text-xl'></i>
                             <span class="font-medium">Profile</span>
+                        </a>
                     </li>
                 </ul>
             </nav>
         </div>
 
         <div>
-            <a href="{{ url_for('logout') }}" class="flex items-center gap-3 w-full px-4 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200">
+            <a href="login.html"
+               class="flex items-center gap-3 w-full px-4 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200">
                 <i class ='bx bxs-log-out text-xl'></i>
                 <span class="font-semibold">Log Out</span>
             </a>
         </div>
     </aside>
 
+
+    <!-- MAIN CONTENT -->
     <main class="ml-64 p-8">
         <div class ="flex justify-between items-center mb-2">
-            <div>
-                <h2 class="text-3xl font-bold mb-4 mt-2">Welcome, Dr. {{ nama }}.</h2>
-                <p class="text-gray-600"> Have a nice day and great work</p>
-            </div>
-            <div>
-                <a href="{{ url_for('add_jadwal_dokter') }}" class="py-4 px-5 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
-                    + Add Schedule
-                </a>
-            </div>
+            <h2 class="text-3xl font-bold mb-4 mt-2">Welcome, Dr. {{ nama }}.</h2>
+
+            <a href="addJadwalDokter.html"
+               class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700">
+                + Add Schedule
+            </a>
         </div>
 
+        <!--statistic + Appointment-->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
 
-                <div class="lg:col-span-2 flex flex-col gap-6">
+            <div class="lg:col-span-2 flex flex-col gap-6">
 
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-96 overflow-y-auto">
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-auto">
-    
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-lg text-gray-800">Today's Appointment</h3>
-        <a href="{{ url_for('display_appointment') }}" class="text-sm text-blue-600 hover:underline">Lihat Semua</a>
-    </div>
-    
-    {% if appointments_today %}
-        {% for appt in appointments_today %}
-            {% set st = appt.get('status', '') %}
-            <div class="mb-3 flex items-center justify-between">
-                <div class="flex flex-col">
-                    <div class="font-semibold text-sm">{{ appt.get('nama') }} — <span class="text-xs text-gray-500">{{ appt.get('waktu') }}</span></div>
-                    <div class="text-xs text-gray-400">ID: {{ appt.get('appointment_id') }}</div>
+                <!-- STATISTIC -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    
+                    <div class="grid grid-cols-2 gap-6 md:divide-x divide-gray-100">
+                        
+                        <div class="pr-4">
+                            <h3 class="font-bold text-gray-500 text-sm uppercase tracking-wide mb-2">Today's Statistic</h3>
+
+                            <div class="grid grid-cols-2 gap-4 flex items-center">
+                                
+                                <div class="flex flex-col mt-4 items-center">
+                                    <span class="text-4xl font-bold text-gray-900">{{ appointments_today|length }}</span>
+                                    <span class="text-sm text-gray-400 mb-1 mt-2">Patient</span>
+                                </div>
+                                
+                                <div class="flex flex-col mt-4 items-center">
+                                    <span class="text-4xl font-bold text-gray-900">{{ upcoming_count }}</span>
+                                    <span class="text-sm text-gray-400 mb-1 mt-2">Upcoming</span>
+                                </div>
+                                
+                            </div>
+                        </div>
+
+                        <div class="md:pl-6">
+                            <h3 class="font-bold text-gray-500 text-sm uppercase tracking-wide mb-2">Your Schedule</h3>
+                            <div class="flex flex-col gap-2 overflow-y-auto max-h-40 pr-2">
+                                {% for item in jadwal_saya %}
+                                <div class="flex flex-row items-center justify-between mt-4">
+                                    <p class="font-semibold text-gray-800">{{ item.hari }}</p>
+                                    <p class="text-xs text-gray-800">{{ item.jam_mulai }} - {{ item.jam_selesai }} WIB</p>
+                                </div>
+                                {% else %}
+                                <div class="flex flex-col items-center justify-center h-full py-4 text-center">
+                                    <p class="text-sm text-gray-400 italic">Belum ada jadwal praktek.</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    {% if st in ['done','completed'] %}
-                        <a href="{{ url_for('add_rekam', appointment_id=appt.get('appointment_id')) }}" class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">Lihat Detail</a>
-                    {% elif st == 'cancelled' %}
-                        <button disabled class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-gray-100 text-gray-400 cursor-not-allowed">—</button>
+
+
+                <!-- TODAY APPOINTMENT (UPDATED VERSION) -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-96 overflow-y-auto">
+
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg text-gray-800">Today's Appointment</h3>
+                        <a href="{{ url_for('display_appointment') }}" class="text-sm text-blue-600 hover:underline">Lihat Semua</a>
+                    </div>
+
+                    {% if appointments_today %}
+                        {% for appt in appointments_today %}
+                            {% set st = appt.get('status', '') %}
+
+                            <div class="mb-3 flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors border border-gray-300 hover:border-gray-100">
+
+                                <div class="flex flex-col">
+                                    <div class="font-semibold text-sm">
+                                        {{ appt.get('nama') }} —
+                                        <span class="text-xs text-gray-500">{{ appt.get('waktu') }}</span>
+                                    </div>
+                                    <div class="text-xs text-gray-400">ID: {{ appt.get('appointment_id') }}</div>
+                                </div>
+
+                                <div>
+                                    {% if st in ['done','completed'] %}
+                                        <a href="{{ url_for('add_rekam', appointment_id=appt.get('appointment_id')) }}"
+                                           class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
+                                            Lihat Detail
+                                        </a>
+
+                                    {% elif st == 'cancelled' %}
+                                        <button disabled
+                                                class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">
+                                            —
+                                        </button>
+
+                                    {% else %}
+                                        <a href="{{ url_for('add_rekam', appointment_id=appt.get('appointment_id')) }}"
+                                           class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700">
+                                            + Rekam Medis
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
                     {% else %}
-                        <a href="{{ url_for('add_rekam', appointment_id=appt.get('appointment_id')) }}" class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700">+ Rekam Medis</a>
+                        <p class="text-sm text-gray-400 italic">Belum ada appointment untuk hari ini.</p>
                     {% endif %}
                 </div>
+
             </div>
-        {% endfor %}
-    {% else %}
-        <p class="text-sm text-gray-400 italic">Belum ada appointment untuk hari ini.</p>
-    {% endif %}
 
-</div>
- </div>
 
-                </div> 
-                
-</main>
-        <script>
+            <!-- RIGHT SIDEBAR -->
+            <div class="flex flex-col gap-6">
+
+                <!-- SIMPLE CALENDAR -->
+                <div class="col-span-1 bg-white p-6 rounded-xl shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="prevBtn" class="text-gray-600 hover:text-black">&lt;</button>
+                        <h3 id="monthYear" class="text-lg font-bold text-gray-800"></h3>
+                        <button id="nextBtn" class="text-gray-600 hover:text-black">&gt;</button>
+                    </div>
+
+                    <div class="grid grid-cols-7 text-center text-gray-500 text-sm mb-2">
+                        <div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div>
+                        <div>Kam</div><div>Jum</div><div>Sab</div>
+                    </div>
+
+                    <div id="daysGrid" class="grid grid-cols-7 gap-1 text-center"></div>
+                </div>
+
+                <!-- NOTIFICATIONS -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-full">
+                    <h3 class="font-bold text-lg text-gray-800">Notifications</h3>
+                    <ul class="mt-4 space-y-3 text-sm text-gray-600">
+                        <li class="flex gap-2">
+                            <span class="text-blue-500">•</span> Rapat Dokter jam 13:00
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-blue-500">•</span> Update stok obat masuk
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>        
+    </main>
+    <script>
         (function(){
             const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
             let today = new Date();
@@ -128,8 +230,6 @@
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
 
-            if (!monthYearEl || !daysGrid || !prevBtn || !nextBtn) return;
-
             function renderCalendar(month, year){
                 monthYearEl.textContent = `${monthNames[month]} ${year}`;
                 daysGrid.innerHTML = '';
@@ -137,7 +237,6 @@
                 const firstDay = new Date(year, month, 1).getDay();
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-                // Fill initial empty cells
                 for(let i = 0; i < firstDay; i++){
                     const empty = document.createElement('div');
                     empty.className = 'p-2 text-sm text-gray-300';
@@ -146,30 +245,38 @@
 
                 for(let d = 1; d <= daysInMonth; d++){
                     const cell = document.createElement('div');
-                    const isToday = (d === today.getDate() && month === today.getMonth() && year === today.getFullYear());
+                    const isToday = (
+                        d === today.getDate() &&
+                        month === today.getMonth() &&
+                        year === today.getFullYear()
+                    );
+
                     cell.className = 'p-2 text-sm flex items-center justify-center';
+
                     if(isToday){
-                        cell.innerHTML = `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white font-semibold">${d}</span>`;
+                        cell.innerHTML =
+                            `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white font-semibold">${d}</span>`;
                     } else {
-                        cell.innerHTML = `<span class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100">${d}</span>`;
+                        cell.innerHTML =
+                            `<span class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100">${d}</span>`;
                     }
+
                     daysGrid.appendChild(cell);
                 }
             }
 
-            prevBtn.addEventListener('click', function(){
-                currentMonth -= 1;
-                if(currentMonth < 0){ currentMonth = 11; currentYear -= 1; }
+            prevBtn.onclick = () => {
+                currentMonth--;
+                if(currentMonth < 0){ currentMonth = 11; currentYear--; }
                 renderCalendar(currentMonth, currentYear);
-            });
+            };
 
-            nextBtn.addEventListener('click', function(){
-                currentMonth += 1;
-                if(currentMonth > 11){ currentMonth = 0; currentYear += 1; }
+            nextBtn.onclick = () => {
+                currentMonth++;
+                if(currentMonth > 11){ currentMonth = 0; currentYear++; }
                 renderCalendar(currentMonth, currentYear);
-            });
+            };
 
-            // Initial render
             renderCalendar(currentMonth, currentYear);
         })();
     </script>
