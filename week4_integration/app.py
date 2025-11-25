@@ -777,7 +777,7 @@ def book_appointment(jadwal_id):
     cur.close()
 
     flash("Appointment berhasil dibuat!", "success")
-    return redirect("makeAppointment.html")
+    return redirect("bookAppointment.html")
 
 
 @app.route('/booking', methods=['POST'])
@@ -814,7 +814,7 @@ def book_appointment_form():
         cur.close()
 
         flash('Appointment berhasil dibuat dan berstatus waiting.', 'success')
-        return redirect(url_for('display_appointment'))
+        return redirect("bookAppoinment.html")
 
     except Exception as e:
         try:
