@@ -18,7 +18,7 @@
 
                 <div class="flex flex-col">
                         <h1 class="text-white text-lg font-bold leading-tight">Mayo Clinic</h1>
-                        <p class="text-blue-200 text-xs font-medium tracking-wide">Doctor/p>
+                        <p class="text-blue-200 text-xs font-medium tracking-wide">Doctor</p>
                 </div>
             </header>
 
@@ -87,18 +87,28 @@
         <a href="{{ url_for('display_appointment') }}" class="text-sm text-blue-600 hover:underline">Lihat Semua</a>
     </div>
     
-    {% for appt in appointments_today %}
-        <div>
-            {% if st in ['done','completed'] %}
-                <a href="{{ url_for('add_rekam', appointment_id=appt.appointment_id) }}" class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">Lihat Detail</a>
-            {% elif st == 'cancelled' %}
-                <button disabled class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-gray-100 text-gray-400 cursor-not-allowed">—</button>
-            {% else %}
-                <a href="{{ url_for('add_rekam', appointment_id=appt.appointment_id) }}" class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700">+ Rekam Medis</a>
-            {% endif %}
-        </div>
-        
-    {% endfor %}
+    {% if appointments_today %}
+        {% for appt in appointments_today %}
+            {% set st = appt.get('status', '') %}
+            <div class="mb-3 flex items-center justify-between">
+                <div class="flex flex-col">
+                    <div class="font-semibold text-sm">{{ appt.get('nama') }} — <span class="text-xs text-gray-500">{{ appt.get('waktu') }}</span></div>
+                    <div class="text-xs text-gray-400">ID: {{ appt.get('appointment_id') }}</div>
+                </div>
+                <div>
+                    {% if st in ['done','completed'] %}
+                        <a href="{{ url_for('add_rekam', appointment_id=appt.get('appointment_id')) }}" class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">Lihat Detail</a>
+                    {% elif st == 'cancelled' %}
+                        <button disabled class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-gray-100 text-gray-400 cursor-not-allowed">—</button>
+                    {% else %}
+                        <a href="{{ url_for('add_rekam', appointment_id=appt.get('appointment_id')) }}" class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700">+ Rekam Medis</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-sm text-gray-400 italic">Belum ada appointment untuk hari ini.</p>
+    {% endif %}
 
 </div>
  </div>
@@ -117,6 +127,8 @@
             const daysGrid = document.getElementById('daysGrid');
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
+
+            if (!monthYearEl || !daysGrid || !prevBtn || !nextBtn) return;
 
             function renderCalendar(month, year){
                 monthYearEl.textContent = `${monthNames[month]} ${year}`;

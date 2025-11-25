@@ -36,8 +36,8 @@ def home():
             return redirect(url_for('homepageResepsionis'))
             
         elif role == 'dokter':
-            # KHUSUS DOKTER: Pindah ke Home Dokter
-            return redirect(url_for('dokter_home'))
+            # KHUSUS DOKTER: Pindah ke dashboard dokter (backend view)
+            return redirect(url_for('dokter_dashboard'))
             
         elif role == 'pasien':
             # PASIEN: Tetap di halaman utama tapi mode login
@@ -99,7 +99,7 @@ def login():
                 session['id'] = dokter[0]
                 cur.close()
                 flash('Welcome Doctor!', 'success')
-                return redirect(url_for('dokter_home'))
+                return redirect(url_for('dokter_dashboard'))
 
         cur.close()
         return render_template('login.html', error='Invalid email or password')
@@ -428,7 +428,8 @@ def dokter_home():
             return redirect(url_for('home'))
 
         nama = row[0]
-        return render_template('newHomepageDokter.html', nama=nama)
+        # redirect to the dashboard route which populates jadwal and appointments
+        return redirect(url_for('dokter_dashboard'))
 
     except Exception as e:
         flash(f'Error fetching doctor profile: {str(e)}', 'error')
@@ -794,16 +795,39 @@ def book_appointment(jadwal_id):
     cur.close()
 
     flash("Appointment berhasil dibuat!", "success")
-    return redirect("bookAppointment.html")
+    return redirect(url_for('book_appointment_form'))
 
 
-@app.route('/booking', methods=['POST'])
+@app.route('/booking', methods=['GET', 'POST'])
 def book_appointment_form():
     # Require pasien login for booking via form
     if 'email' not in session or session.get('role') != 'pasien':
         flash('Silakan login sebagai pasien untuk membuat appointment.', 'error')
         return redirect(url_for('login'))
 
+    if request.method == 'GET':
+        # render booking form with available doctors and schedules
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute("SELECT dokter_id, nama_depan, nama_belakang FROM Dokter")
+            dokter_list = cur.fetchall()
+
+            cur.execute("""
+                SELECT j.jadwal_id, j.hari, j.jam_mulai, j.jam_selesai, d.nama_depan, d.nama_belakang
+                FROM Jadwal_dokter j
+                JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
+                JOIN Dokter d ON dj.dokter_id = d.dokter_id
+                ORDER BY j.jadwal_id
+            """)
+            jadwal_list = cur.fetchall()
+            cur.close()
+
+            return render_template('bookAppointment.html', dokter_list=dokter_list, jadwal_list=jadwal_list)
+        except Exception as e:
+            flash(f'Error loading booking page: {str(e)}', 'error')
+            return redirect(url_for('home'))
+
+    # POST flow continues here
     pasien_id = session.get('id')
     dokter_id = request.form.get('dokter_id')
     jadwal_id = request.form.get('jadwal_id')
@@ -831,7 +855,8 @@ def book_appointment_form():
         cur.close()
 
         flash('Appointment berhasil dibuat dan berstatus waiting.', 'success')
-        return redirect("bookAppoinment.html")
+        # back to booking page (GET) so user can see available slots or create another
+        return redirect(url_for('book_appointment_form'))
 
     except Exception as e:
         try:

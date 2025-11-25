@@ -53,11 +53,11 @@
                         </div>
                     </div>
 
-                                    <form method="POST" action="{{ url_for('book_appointment_form') }}" class="space-y-6">
+                    <form method="POST" action="{{ url_for('book_appointment_form') }}" class="space-y-6">
                         <div>
                             <div>
                                 <label class="block text-xs text-gray-500 mb-1">Doctor</label>
-                                <select name="dokter_id" class="w-full rounded-md border-gray-200 px-3 py-2 text-sm">
+                                <select id="dokterSelect" name="dokter_id" class="w-full rounded-md border-gray-200 px-3 py-2 text-sm">
                                     <option value="" disabled selected>Select Doctor</option>
                                     {% for dokter in dokter_list %}
                                         <option value="{{ dokter[0] }}">{{ dokter[1] }} {{ dokter[2] }}</option>
@@ -67,17 +67,22 @@
 
                             <div>
                                 <label class="block text-xs text-gray-500 mb-1">Date</label>
-                                <input type="date" name="tanggal" class="w-full rounded-md border-gray-200 px-3 py-2 text-sm" />
+                                <input id="dateInput" type="date" name="tanggal" class="w-full rounded-md border-gray-200 px-3 py-2 text-sm" />
                             </div>
 
                             <div>
                                 <label class="block text-xs text-gray-500 mb-1">Time</label>
-                                <select name="jadwal_id" class="w-full rounded-md border-gray-200 px-3 py-2 text-sm">
+                                <select id="timeSelect" name="jadwal_id" class="w-full rounded-md border-gray-200 px-3 py-2 text-sm">
                                     <option value="" disabled selected>Select Time</option>
                                     {% for jadwal in jadwal_list %}
-                                        <option value="{{ jadwal[0] }}">{{ jadwal[1] }} - {{ jadwal[2] }} ({{ jadwal[3] }} to {{ jadwal[4] }})</option>
+                                        <option value="{{ jadwal[0] }}">{{ jadwal[1] }} · {{ jadwal[2] }} - {{ jadwal[3] }} · Dr. {{ jadwal[4] }} {{ jadwal[5] }}</option>
                                     {% endfor %}
                                 </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Patient name</label>
+                                <input id="patientName" name="patient_name" type="text" placeholder="Your full name" class="w-full rounded-md border-gray-200 px-3 py-2 text-sm" />
                             </div>
 
                             <button type="submit" class="mt-4 w-full bg-[#052659] text-white rounded-full px-4 py-2 text-sm font-medium hover:bg-[#031d36] transition">Book Appointment</button>
@@ -113,4 +118,50 @@
     </div>
 
 </body>
+<script>
+// Confirmation modal logic
+const form = document.querySelector('form[action="{{ url_for('book_appointment_form') }}"]');
+const confirmModal = document.getElementById('confirmModal');
+const cmDoctor = document.getElementById('cmDoctor');
+const cmDate = document.getElementById('cmDate');
+const cmTime = document.getElementById('cmTime');
+const cmName = document.getElementById('cmName');
+const cmCancel = document.getElementById('cmCancel');
+const cmConfirm = document.getElementById('cmConfirm');
+
+function showModal() {
+    confirmModal.classList.remove('hidden');
+    confirmModal.classList.add('flex');
+}
+
+function hideModal() {
+    confirmModal.classList.remove('flex');
+    confirmModal.classList.add('hidden');
+}
+
+if (form) {
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const dokterSel = document.getElementById('dokterSelect');
+        const timeSel = document.getElementById('timeSelect');
+        const dateInp = document.getElementById('dateInput');
+        const nameInp = document.getElementById('patientName');
+
+        cmDoctor.textContent = dokterSel.options[dokterSel.selectedIndex]?.text || '-';
+        cmDate.textContent = dateInp.value || '-';
+        cmTime.textContent = timeSel.options[timeSel.selectedIndex]?.text || '-';
+        cmName.textContent = nameInp.value || '-';
+
+        showModal();
+    });
+
+    cmCancel.addEventListener('click', () => hideModal());
+    cmConfirm.addEventListener('click', () => {
+        hideModal();
+        form.submit();
+    });
+}
+</script>
+</html>
 </html>
