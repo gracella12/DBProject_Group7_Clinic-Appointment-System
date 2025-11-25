@@ -1,95 +1,136 @@
-{% extends "layout.html" %}
-
-{% block content %}
-<div class="flex h-screen w-full bg-[#021024] text-[#C1E8FF] font-sans overflow-hidden fixed inset-0 pt-16">
-
+{% extends "layout.html" %} {% block content %}
+<div
+  class="flex h-screen w-full bg-[#021024] text-[#C1E8FF] font-sans overflow-hidden fixed inset-0 pt-16 gap-12 pr-6"
+>
   <aside
-    class="w-64 h-full bg-[#052659] border-r border-[#5483B3]/20 hidden md:flex flex-col shadow-2xl z-20 flex-shrink-0 relative">
-
-    <div class="p-6 flex items-center gap-3 border-b border-[#5483B3]/10 bg-[#021024]/30">
-      <img src="{{ url_for('static', filename='images/logodark.png') }}" alt="Mayo Clinic"
-        class="h-10 w-auto object-contain">
+    class="w-64 h-full bg-[#052659] border-r border-[#5483B3]/20 hidden md:flex flex-col shadow-2xl z-20 flex-shrink-0 relative"
+  >
+    <div
+      class="p-6 flex items-center gap-3 border-b border-[#5483B3]/10 bg-[#021024]/30"
+    >
+      <img
+        src="{{ url_for('static', filename='images/logodark.png') }}"
+        alt="Mayo Clinic"
+        class="h-10 w-auto object-contain"
+      />
 
       <div>
-        <h1 class="text-xl font-bold text-white tracking-tight leading-none">MAYO</h1>
-        <span class="text-[25px] text-[#7DA0CA] tracking-widest uppercase font-semibold">Clinic</span>
+        <h1 class="text-xl font-bold text-white tracking-tight leading-none">
+          MAYO
+        </h1>
+        <span
+          class="text-[25px] text-[#7DA0CA] tracking-widest uppercase font-semibold"
+          >Clinic</span
+        >
       </div>
     </div>
 
-    <nav class="flex-1 px-4 space-y-3 mt-6 overflow-y-auto">
-      <a href="#"
-        class="flex items-center gap-3 px-4 py-3 bg-[#5483B3]/20 text-white rounded-xl border border-[#5483B3]/30 shadow-lg shadow-[#5483B3]/10">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
-          </path>
+    <nav class="flex-1 px-9 space-y-3 mt-6 overflow-y-auto">
+      <a
+        href="#"
+        class="flex items-center gap-3 px-4 py-3 bg-[#5483B3]/20 text-white rounded-xl border border-[#5483B3]/30 shadow-lg shadow-[#5483B3]/10"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+          ></path>
         </svg>
         <span class="font-medium">Dashboard</span>
       </a>
 
-      <a href="{{ url_for('display_dokter') }}"
-        class="flex items-center gap-3 px-4 py-3 text-[#C1E8FF] hover:bg-[#021024] hover:text-white rounded-xl transition-all">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-        </svg>
-        <span>Doctors List</span>
-      </a>
-
-      <a href="{{ url_for('display_jadwal') }}"
-        class="flex items-center gap-3 px-4 py-3 text-[#C1E8FF] hover:bg-[#021024] hover:text-white rounded-xl transition-all">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+      <a
+        href="{{ url_for('display_jadwal') }}"
+        class="flex items-center gap-3 px-4 py-3 text-[#C1E8FF] hover:bg-[#021024] hover:text-white rounded-xl transition-all"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          ></path>
         </svg>
         <span>Schedules</span>
       </a>
 
-      <a href="{{ url_for('register') }}"
-        class="flex items-center gap-3 px-4 py-3 text-[#C1E8FF] hover:bg-[#021024] hover:text-white rounded-xl transition-all">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+      <a
+        href="{{ url_for('register') }}"
+        class="flex items-center gap-3 px-4 py-3 text-[#C1E8FF] hover:bg-[#021024] hover:text-white rounded-xl transition-all"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+          ></path>
         </svg>
         <span>Register Patient</span>
       </a>
     </nav>
-
-    <div class="p-6 border-t border-[#5483B3]/10">
-      <a href="{{ url_for('logout') }}"
-        class="flex items-center gap-2 text-red-400 hover:text-red-300 text-sm font-medium transition">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-        </svg>
-        Sign Out
-      </a>
-    </div>
   </aside>
 
-  <main class="flex-1 h-full flex flex-col overflow-y-auto relative bg-[#021024]">
-
+  <main
+    class="flex-1 h-full flex flex-col overflow-y-auto relative bg-[#021024]"
+  >
     <header
-      class="flex items-center justify-between px-20 py-8 z-10 sticky top-0 bg-[#021024]/95 backdrop-blur-md border-b border-[#5483B3]/10">
+      class="flex items-center justify-between px-20 py-8 z-10 sticky top-0 bg-[#021024]/95 backdrop-blur-md border-b border-[#5483B3]/10"
+    >
       <div>
-        <h2 class="text-3xl font-bold text-white drop-shadow-md">Receptionist Portal</h2>
-        <p class="text-[#7DA0CA] mt-1">Manage patient flow and daily appointments.</p>
+        <h2 class="text-3xl font-bold text-white drop-shadow-md">
+          Receptionist Portal
+        </h2>
+        <p class="text-[#7DA0CA] mt-1">
+          Manage patient flow and daily appointments.
+        </p>
       </div>
     </header>
 
     <div class="px-20 pb-12 space-y-8 z-10 mt-6">
-
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-[#052659] p-6 rounded-2xl border border-[#5483B3]/20 shadow-lg relative overflow-hidden">
-          <p class="text-[#7DA0CA] text-sm font-medium mb-1 uppercase tracking-wider">Today's Appointments</p>
+        <div
+          class="bg-[#052659] p-6 rounded-2xl border border-[#5483B3]/20 shadow-lg relative overflow-hidden"
+        >
+          <p
+            class="text-[#7DA0CA] text-sm font-medium mb-1 uppercase tracking-wider"
+          >
+            Today's Appointments
+          </p>
           <h3 class="text-4xl font-bold text-white">{{ today_count }}</h3>
           <div class="mt-4 flex items-center gap-2 text-xs text-[#C1E8FF]">
-            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> System Updated
+            <span
+              class="w-2 h-2 rounded-full bg-green-400 animate-pulse"
+            ></span>
+            System Updated
           </div>
         </div>
 
-        <div class="bg-[#052659] p-6 rounded-2xl border border-[#5483B3]/20 shadow-lg relative overflow-hidden">
-          <p class="text-[#7DA0CA] text-sm font-medium mb-1 uppercase tracking-wider">Active Doctors</p>
+        <div
+          class="bg-[#052659] p-6 rounded-2xl border border-[#5483B3]/20 shadow-lg relative overflow-hidden"
+        >
+          <p
+            class="text-[#7DA0CA] text-sm font-medium mb-1 uppercase tracking-wider"
+          >
+            Active Doctors
+          </p>
           <h3 class="text-4xl font-bold text-white">{{ active_docs }}</h3>
           <div class="mt-4 flex items-center gap-2 text-xs text-[#C1E8FF]">
             <span class="text-[#7DA0CA]">●</span> Available for booking
@@ -97,73 +138,110 @@
         </div>
 
         <div
-          class="bg-gradient-to-br from-[#5483B3] to-[#7DA0CA] p-6 rounded-2xl shadow-lg flex flex-col justify-between text-[#021024]">
+          class="bg-gradient-to-br from-[#5483B3] to-[#7DA0CA] p-6 rounded-2xl shadow-lg flex flex-col justify-between text-[#021024]"
+        >
           <div>
             <h3 class="text-xl font-bold">Book Appointment</h3>
-            <p class="opacity-80 text-sm mt-1">Create booking for registered patient.</p>
+            <p class="opacity-80 text-sm mt-1">
+              Create booking for registered patient.
+            </p>
           </div>
-          <a href="{{ url_for('receptionist_book_appointment') }}"
-            class="mt-4 w-full py-3 bg-[#021024]/90 hover:bg-[#021024] text-white text-center font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
+          <a
+            href="{{ url_for('receptionist_book_appointment') }}"
+            class="mt-4 w-full py-3 bg-[#021024]/90 hover:bg-[#021024] text-white text-center font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
+          >
             + Book Now
           </a>
         </div>
       </div>
 
-      <div class="bg-[#052659] border border-[#5483B3]/20 rounded-2xl overflow-hidden shadow-2xl">
+      <div
+        class="bg-[#052659] border border-[#5483B3]/20 rounded-2xl overflow-hidden shadow-2xl"
+      >
         <div
-          class="p-6 border-b border-[#5483B3]/10 flex justify-between items-center bg-[#052659]/50 backdrop-blur-sm">
-          <h3 class="text-lg font-semibold text-white">Upcoming Appointments</h3>
-          {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
+          class="p-6 border-b border-[#5483B3]/10 flex justify-between items-center bg-[#052659]/50 backdrop-blur-sm"
+        >
+          <h3 class="text-lg font-semibold text-white">
+            Upcoming Appointments
+          </h3>
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %}
           <div class="flex gap-2">
             {% for category, message in messages %}
-            <span class="text-xs px-3 py-1 rounded bg-blue-500 text-white animate-fade-in-up">{{ message }}</span>
+            <span
+              class="text-xs px-3 py-1 rounded bg-blue-500 text-white animate-fade-in-up"
+              >{{ message }}</span
+            >
             {% endfor %}
           </div>
-          {% endif %}
-          {% endwith %}
+          {% endif %} {% endwith %}
         </div>
 
         <div class="overflow-x-auto">
           <table class="w-full text-center border-collapse">
             <thead>
-              <tr class="text-[#7DA0CA] text-xs uppercase bg-[#021024]/30 border-b border-[#5483B3]/10">
-                <th class="px-6 py-4 font-semibold tracking-wider text-center">Date & Time</th>
-                <th class="px-6 py-4 font-semibold tracking-wider text-center">Patient</th>
-                <th class="px-6 py-4 font-semibold tracking-wider text-center">Assigned Doctor</th>
-                <th class="px-6 py-4 font-semibold tracking-wider text-center">Status</th>
-                <th class="px-6 py-4 font-semibold tracking-wider text-center">Actions</th>
+              <tr
+                class="text-[#7DA0CA] text-xs uppercase bg-[#021024]/30 border-b border-[#5483B3]/10"
+              >
+                <th class="px-6 py-4 font-semibold tracking-wider text-center">
+                  Date & Time
+                </th>
+                <th class="px-6 py-4 font-semibold tracking-wider text-center">
+                  Patient
+                </th>
+                <th class="px-6 py-4 font-semibold tracking-wider text-center">
+                  Assigned Doctor
+                </th>
+                <th class="px-6 py-4 font-semibold tracking-wider text-center">
+                  Status
+                </th>
+                <th class="px-6 py-4 font-semibold tracking-wider text-center">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody class="text-sm divide-y divide-[#5483B3]/10">
-              {% if appointments %}
-              {% for app in appointments %}
+              {% if appointments %} {% for app in appointments %}
               <tr class="hover:bg-[#5483B3]/5 transition-colors">
                 <td class="px-6 py-4 text-[#C1E8FF] text-center">
                   <div class="font-medium">{{ app.date }}</div>
                   <div class="text-xs text-[#7DA0CA]">{{ app.time }}</div>
                 </td>
                 <td class="px-6 py-4 text-center">
-                  <div class="font-medium text-white">{{ app.patient_name }}</div>
-                  <div class="text-xs text-[#5483B3]">{{ app.patient_contact }}</div>
+                  <div class="font-medium text-white">
+                    {{ app.patient_name }}
+                  </div>
+                  <div class="text-xs text-[#5483B3]">
+                    {{ app.patient_contact }}
+                  </div>
                 </td>
-                <td class="px-6 py-4 text-[#7DA0CA] font-medium text-center">{{ app.doctor_name }}</td>
+                <td class="px-6 py-4 text-[#7DA0CA] font-medium text-center">
+                  {{ app.doctor_name }}
+                </td>
                 <td class="px-6 py-4 text-center">
                   <span
-                    class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/10 text-gray-400 border border-gray-500/20 block w-fit mx-auto">
+                    class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/10 text-gray-400 border border-gray-500/20 block w-fit mx-auto"
+                  >
                     {{ app.status }}
                   </span>
                 </td>
                 <td class="px-6 py-4 text-center">
-                  <a href="{{ url_for('delete_appointment', id=app.id) }}"
+                  <a
+                    href="{{ url_for('delete_appointment', id=app.id) }}"
                     class="text-red-400 hover:text-red-300 transition text-xs font-medium"
-                    onclick="return confirm('Cancel?');">Cancel</a>
+                    onclick="return confirm('Cancel?');"
+                    >Cancel</a
+                  >
                 </td>
               </tr>
-              {% endfor %}
-              {% else %}
+              {% endfor %} {% else %}
               <tr>
-                <td colspan="5" class="px-6 py-12 text-center text-[#5483B3] italic">No appointments found.</td>
+                <td
+                  colspan="5"
+                  class="px-6 py-12 text-center text-[#5483B3] italic"
+                >
+                  No appointments found.
+                </td>
               </tr>
               {% endif %}
             </tbody>
