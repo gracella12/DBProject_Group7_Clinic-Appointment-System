@@ -1,0 +1,14 @@
+{
+    "builds": [
+        {
+            "src": "week4_integration/app.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "week4_integration/app.py"
+        }
+    ]
+}
