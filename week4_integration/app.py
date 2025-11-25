@@ -115,7 +115,7 @@ def register():
         hashed_password = generate_password_hash(pwd, method='pbkdf2:sha256')
         
         cur = mysql.connection.cursor()
-        cur.execute('insert into pasien (email, password) values (%s, %s)', (email, hashed_password))
+        cur.execute('insert into Pasien (email, password) values (%s, %s)', (email, hashed_password))
         mysql.connection.commit()
         cur.close()
         
@@ -148,7 +148,7 @@ def editProfile():
         try:
             cur = mysql.connection.cursor()
             
-            cur.execute('SELECT pasien_id FROM pasien WHERE email = %s', (email,))
+            cur.execute('SELECT pasien_id FROM Pasien WHERE email = %s', (email,))
             result = cur.fetchone()
             if not result:
                 flash('User not found!', 'error')
@@ -157,7 +157,7 @@ def editProfile():
             pasien_id = result[0]
             
             cur.execute('''
-                UPDATE pasien 
+                UPDATE Pasien 
                 SET nama_depan = %s, nama_belakang = %s, gender = %s, 
                     tanggal_lahir = %s, Kota = %s, Jalan = %s 
                 WHERE email = %s
@@ -771,7 +771,7 @@ def book_appointment(jadwal_id):
     email = session['email']
 
     cur = mysql.connection.cursor()
-    cur.execute("SELECT pasien_id FROM pasien WHERE email=%s", (email,))
+    cur.execute("SELECT pasien_id FROM Pasien WHERE email=%s", (email,))
     pasien_id = cur.fetchone()[0]
 
 
@@ -794,7 +794,7 @@ def book_appointment(jadwal_id):
     cur.close()
 
     flash("Appointment berhasil dibuat!", "success")
-    return redirect("makeAppointment.html")
+    return redirect("bookAppointment.html")
 
 
 @app.route('/booking', methods=['POST'])
