@@ -120,7 +120,7 @@
 </body>
 <script>
 // Confirmation modal logic
-const form = document.querySelector('form[action="{{ url_for('book_appointment_form') }}"]');
+const form = document.querySelector(`form[action="{{ url_for('book_appointment_form') }}"]`);
 const confirmModal = document.getElementById('confirmModal');
 const cmDoctor = document.getElementById('cmDoctor');
 const cmDate = document.getElementById('cmDate');
@@ -163,5 +163,4 @@ if (form) {
     });
 }
 </script>
-</html>
 </html>
