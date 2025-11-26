@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+from MySQLdb.cursors import DictCursor 
 
 load_dotenv()
 
@@ -895,9 +896,6 @@ def receptionist_book_appointment():
     return render_template('bookAppointmentResepsionis.html', patients=patients, schedules=schedules)
 
 #Modul Dokter
-from flask import render_template, session
-# Pastikan import DictCursor jika menggunakan mysqldb/pymysql
-from MySQLdb.cursors import DictCursor 
 
 @app.route('/dokter/dashboard')
 def dokter_dashboard():
