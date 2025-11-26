@@ -899,56 +899,72 @@ def receptionist_book_appointment():
 
 @app.route('/dokter/dashboard')
 def dokter_dashboard():
-
     cur = mysql.connection.cursor(DictCursor)
+    dokter_id_session = session.get('id')
 
-    # Ambil Nama
-    cur.execute("SELECT nama FROM Dokter WHERE id = %s", (session.get('id'),))
+    #ambil nama dokter
+    cur.execute("""
+        SELECT nama_depan AS nama 
+        FROM Dokter 
+        WHERE dokter_id = %s
+    """, (dokter_id_session,))
+    
     res_dokter = cur.fetchone()
     nama_dokter = res_dokter['nama'] if res_dokter else "Dokter"
 
-    #Statistik
+    #for statistik
     stats = {}
     
-    # Hitung Pasien Hari Ini
+    # Total
     cur.execute("""
-        SELECT COUNT(*) as total 
+        SELECT COUNT(*) AS total 
+        FROM Appointment 
+        WHERE dokter_id = %s
+    """, (dokter_id_session,))
+    stats['total_appointments'] = cur.fetchone()['total']
+
+    # Hari Ini
+    cur.execute("""
+        SELECT COUNT(*) AS total 
         FROM Appointment 
         WHERE dokter_id = %s AND tanggal = CURDATE()
-    """, (session.get('id'),))
+    """, (dokter_id_session,))
     stats['today_appointments'] = cur.fetchone()['total']
 
-    # Hitung Upcoming
+    # Upcoming
     cur.execute("""
-        SELECT COUNT(*) as total 
+        SELECT COUNT(*) AS total 
         FROM Appointment 
         WHERE dokter_id = %s AND tanggal > CURDATE()
-    """, (session.get('id'),))
+    """, (dokter_id_session,))
     stats['upcoming_appointments'] = cur.fetchone()['total']
 
-
-    # Jadwal Praktek
-    cur.execute("""
-        SELECT hari, jam_mulai, jam_selesai 
-        FROM JadwalPraktek 
-        WHERE dokter_id = %s
-    """, (session.get('id'),))
+    #Jadwal Dokter
+    query_jadwal = """
+        SELECT 
+            j.hari, 
+            j.jam_mulai, 
+            j.jam_selesai 
+        FROM Jadwal_dokter j
+        JOIN Dijadwalkan d ON j.jadwal_id = d.jadwal_id
+        WHERE d.dokter_id = %s
+    """
+    cur.execute(query_jadwal, (dokter_id_session,))
     jadwal_saya = cur.fetchall()
 
-
-    # 4. APPOINTMENT HARI INI (Untuk loop {% for appt in appointments_today %})
+    #Appointment Hari Ini
     query_appt = """
         SELECT 
-            p.nama, 
-            TIME_FORMAT(a.waktu, '%H:%i') as waktu, 
+            CONCAT(p.nama_depan, ' ', p.nama_belakang) AS nama, 
+            a.waktu, 
             a.status, 
-            a.id AS appointment_id 
+            a.appointment_id 
         FROM Appointment a
-        JOIN Pasien p ON a.pasien_id = p.id
+        JOIN Pasien p ON a.pasien_id = p.pasien_id
         WHERE a.dokter_id = %s AND a.tanggal = CURDATE()
         ORDER BY a.waktu ASC
     """
-    cur.execute(query_appt, (session.get('id'),))
+    cur.execute(query_appt, (dokter_id_session,))
     appointments_today = cur.fetchall()
 
     cur.close()
@@ -962,9 +978,7 @@ def dokter_dashboard():
 #########################################################
 
 @app.route('/dokter/jadwal')
-def dokter_jadwal_list():
-
-
+def view_jadwal_dokter():
     return render_template('dokterJadwal.html')
 
 @app.route('/dokter/jadwal/add', methods=['GET', 'POST'])
