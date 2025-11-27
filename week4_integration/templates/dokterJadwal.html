@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Schedule</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            900: '#021024',
+                            800: '#052659',
+                            600: '#5483B3',
+                            400: '#7DA0CA',
+                            100: '#C1E8FF',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans antialiased text-navy-900">
+
+    <!-- SIDEBAR -->
+    {% include 'sidebar_dokter.html' %}
+
+    <div class="ml-64 max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-navy-900">
+                Manage Schedule
+            </h2>
+            <p class="mt-2 text-sm text-navy-600">
+                View and manage your weekly practice hours.
+            </p>
+        </div>
+
+        <div class="bg-white shadow-xl rounded-xl overflow-hidden border border-navy-400">
+            
+            <div class="px-6 py-4 border-b border-gray-200 bg-navy-900 flex justify-between items-center">
+                <h3 class="text-lg leading-6 font-bold text-white">
+                    Active Schedule
+                </h3>
+            </div>
+
+            <div class="p-0">
+                {% if not jadwal_list %}
+                    <div class="text-center py-16">
+                        <div class="w-16 h-16 bg-navy-100 rounded-full flex items-center justify-center mx-auto mb-4 text-navy-600">
+                            <i class="fas fa-calendar-times text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-navy-900">No Schedules Found</h3>
+                        <p class="text-navy-600 mt-1">You haven't set any practice hours yet.</p>
+                    </div>
+                {% else %}
+                    <table class="min-w-full divide-y divide-navy-100">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-navy-800 uppercase tracking-wider">Day</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-navy-800 uppercase tracking-wider">Practice Time</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-navy-800 uppercase tracking-wider">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for jadwal in jadwal_list %}
+                            <tr class="hover:bg-navy-100 transition-colors duration-150">
+                                
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-navy-900">
+                                    - {{ jadwal.hari }}
+                                </td>
+                                
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-navy-800 font-medium">
+                                    <i class="far fa-clock mr-2 text-navy-400"></i>
+                                    {{ jadwal.jam_mulai }} - {{ jadwal.jam_selesai }}
+                                </td>
+
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <form action="{{ url_for('dokter_delete_jadwal') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete the schedule for {{ jadwal.hari }}?');">
+                                        
+                                        <input type="hidden" name="jadwal_id" value="{{ jadwal.jadwal_id }}">
+                                        
+                                        <button type="submit" class="text-red-500 hover:text-red-700 font-semibold hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ml-auto">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

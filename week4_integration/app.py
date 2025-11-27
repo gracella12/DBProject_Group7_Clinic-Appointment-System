@@ -5,7 +5,7 @@ from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import date, datetime
 from MySQLdb.cursors import DictCursor 
 
 load_dotenv()
@@ -899,6 +899,9 @@ def receptionist_book_appointment():
 
 @app.route('/dokter/dashboard')
 def dokter_dashboard():
+    # if 'email' not in session or session.get('role') != 'dokter':
+    #     return redirect(url_for('login'))
+    
     cur = mysql.connection.cursor(DictCursor)
     dokter_id_session = session.get('id')
 
@@ -948,6 +951,8 @@ def dokter_dashboard():
         FROM Jadwal_dokter j
         JOIN Dijadwalkan d ON j.jadwal_id = d.jadwal_id
         WHERE d.dokter_id = %s
+        GROUP BY j.hari, j.jam_mulai, j.jam_selesai
+        ORDER BY FIELD(j.hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'), j.jam_mulai
     """
     cur.execute(query_jadwal, (dokter_id_session,))
     jadwal_saya = cur.fetchall()
@@ -967,28 +972,197 @@ def dokter_dashboard():
     cur.execute(query_appt, (dokter_id_session,))
     appointments_today = cur.fetchall()
 
+    query = """
+        SELECT jd.jadwal_id as jadwal_id, jd.hari, jd.jam_mulai, jd.jam_selesai
+        FROM Jadwal_dokter jd
+        JOIN Dijadwalkan dj ON jd.jadwal_id = dj.jadwal_id
+        WHERE dj.dokter_id = %s
+        ORDER BY FIELD(jd.hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'), jd.jam_mulai
+    """
+    cur.execute(query, (dokter_id_session,))
+    jadwal_data = cur.fetchall()
+    jadwal_list = []
+    if jadwal_data:
+        for row in jadwal_data:
+            jadwal_list.append({
+                'jadwal_id': row['jadwal_id'],   
+                'hari': row['hari'],
+                'jam_mulai': str(row['jam_mulai']), 
+                'jam_selesai': str(row['jam_selesai'])
+            })
+
     cur.close()
 
     return render_template('newHomepageDokter.html', 
                            nama=nama_dokter,
                            stats=stats,
                            jadwal_saya=jadwal_saya,
-                           appointments_today=appointments_today)
+                           appointments_today=appointments_today,
+                           jadwal_list=jadwal_list)
 
 #########################################################
 
 @app.route('/dokter/jadwal')
 def view_jadwal_dokter():
-    return render_template('dokterJadwal.html')
+    if 'id' not in session:
+        return redirect(url_for('login_dokter'))
 
-@app.route('/dokter/jadwal/add', methods=['GET', 'POST'])
+    dokter_id_session = session.get('id')
+    cur = mysql.connection.cursor()
+    
+    # Query tetap sama
+    query = """
+        SELECT jd.jadwal_id, jd.hari, jd.jam_mulai, jd.jam_selesai
+        FROM Jadwal_dokter jd
+        JOIN Dijadwalkan dj ON jd.jadwal_id = dj.jadwal_id
+        WHERE dj.dokter_id = %s
+        ORDER BY FIELD(jd.hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'), jd.jam_mulai
+    """
+    cur.execute(query, (dokter_id_session,))
+    jadwal_data = cur.fetchall()
+    cur.close()
+
+    jadwal_list = []
+    if jadwal_data:
+        for row in jadwal_data:
+            jadwal_list.append({
+                'jadwal_id': row[0],       
+                'hari': row[1],            
+                'jam_mulai': str(row[2]),  
+                'jam_selesai': str(row[3]) 
+            })
+
+    return render_template('dokterJadwal.html', jadwal_list=jadwal_list)
+################################################################
+@app.route('/dokter/jadwal/add', methods=['POST'])
 def dokter_add_jadwal():
-    return render_template('dokterAddJadwal.html')
 
+    cur = mysql.connection.cursor()
+    dokter_id_session = session.get('id')
+
+    if request.method == 'POST':
+        hari = request.form['hari']
+        jam_mulai = request.form['jam_mulai']
+        jam_selesai = request.form['jam_selesai']
+
+        try:
+            cur.execute("""
+                INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai)
+                VALUES (%s, %s, %s)
+            """, (hari, jam_mulai, jam_selesai))
+            jadwal_id = cur.lastrowid  
+
+            # Insert ke Dijadwalkan
+            cur.execute("""
+                INSERT INTO Dijadwalkan (dokter_id, jadwal_id)
+                VALUES (%s, %s)
+            """, (dokter_id_session, jadwal_id))
+
+            mysql.connection.commit()
+            cur.close()
+
+            flash('Jadwal berhasil ditambahkan!', 'success')
+            return redirect(url_for('dokter_homepage'))
+
+        except Exception as e:
+            mysql.connection.rollback()
+            flash(f'Error menambahkan jadwal: {str(e)}', 'error')
+    
+    return redirect(url_for('dokter_dashboard'))
+
+@app.route('/dokter/jadwal/delete', methods=['POST'])
+def dokter_delete_jadwal():
+    cur = mysql.connection.cursor()
+    dokter_id_session = session.get('id')
+
+    if request.method == 'POST':
+        jadwal_id = request.form['jadwal_id']
+
+        try:
+            # Hapus dari Dijadwalkan terlebih dahulu
+            cur.execute("""
+                DELETE FROM Dijadwalkan 
+                WHERE dokter_id = %s AND jadwal_id = %s
+            """, (dokter_id_session, jadwal_id))
+
+            # Hapus dari Jadwal_dokter
+            cur.execute("""
+                DELETE FROM Jadwal_dokter 
+                WHERE jadwal_id = %s
+            """, (jadwal_id,))
+
+            mysql.connection.commit()
+            cur.close()
+
+            flash('Jadwal berhasil dihapus!', 'success')
+            return redirect(url_for('dokter_homepage'))
+
+        except Exception as e:
+            mysql.connection.rollback()
+            flash(f'Error menghapus jadwal: {str(e)}', 'error')
+    
+    return redirect(url_for('dokter_dashboard'))
+
+#############################################################
 @app.route('/dokter/appoinment')
 def dokter_appointment_list():
+    # 1. Cek Login
+    if 'id' not in session:
+        return redirect(url_for('login_dokter'))
 
-    return render_template('dokterAppointment.html')
+    id_dokter = session.get('id')
+    
+    # 2. Ambil tanggal (Default hari ini)
+    tanggal_pilih = request.args.get('date')
+    if not tanggal_pilih:
+        tanggal_pilih = date.today()
+
+    cur = mysql.connection.cursor()
+    
+    # 3. Query SQL (Disesuaikan dengan Struktur Tabel DBProject)
+    query = """
+        SELECT 
+            a.appointment_id,  -- WAJIB: Untuk link tombol 'Input RM'
+            a.waktu,           -- Nama kolom waktu di DB Anda
+            CONCAT(p.nama_depan, ' ', p.nama_belakang) AS nama_pasien,
+            p.pasien_id,       -- Untuk link tombol 'Riwayat'
+            a.status
+        FROM Appointment a
+        JOIN Pasien p ON a.pasien_id = p.pasien_id
+        WHERE a.dokter_id = %s AND a.tanggal = %s
+        ORDER BY a.waktu ASC
+    """
+
+    # 4. Eksekusi
+    cur.execute(query, (id_dokter, tanggal_pilih))
+    raw_appointments = cur.fetchall()
+    cur.close()
+
+    # 5. Mapping Data
+    appointments_list = []
+    
+    if raw_appointments:
+        for row in raw_appointments:
+            appointments_list.append({
+                'id': row['appointment_id'],      # ID Appointment (Penting)
+                'jam_janji': str(row['waktu']),   # Ubah ke string
+                'nama_pasien': row['nama_pasien'],
+                
+                # --- LOGIC PENGGANTI KOLOM HILANG ---
+                'no_rm': f"ID-{row['pasien_id']}", # Buat RM palsu dari ID Pasien
+                'keluhan': "-",                    # Isi strip karena tidak ada di DB
+                # ------------------------------------
+                
+                'pasien_id': row['pasien_id'],
+                'status': row['status']
+            })
+
+    # 6. Render
+    return render_template(
+        'dokterAppointment.html', 
+        appointments=appointments_list, 
+        tanggal_hari_ini=tanggal_pilih
+    )
 
 @app.route('/dokter/pasien')
 def dokter_pasien_list():
@@ -1009,6 +1183,11 @@ def dokter_pasien_detail(id_pasien, id_appt):
 def dokter_input_rekam_medis(id_appt):
 
     return render_template('dokterInputRekamMedis.html')
+
+@app.route('/dokter/edit_profile', methods=['GET', 'POST'])
+def dokter_edit_profile():
+
+    return render_template('dokterEditProfile.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

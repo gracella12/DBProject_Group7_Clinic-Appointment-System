@@ -11,77 +11,26 @@
 <body class="bg-gray-50">
 
     <!-- SIDEBAR -->
-    <aside class="fixed top-0 left-0 bottom-0 w-64 h-screen bg-[#052659] flex flex-col justify-between p-6 shadow-xl z-50">
-        
-        <div>
-            <header class="flex items-center gap-3 mb-10">
-                <div class="w-8 h-8 bg-white rounded flex justify-center text-[#052659] font-bold text-xl">
-                    <img src="logobright.jpg" alt="Logo" class="w-6 h-6">
-                </div>
-
-                <div class="flex flex-col">
-                        <h1 class="text-white text-lg font-bold leading-tight">Klinik Sehat</h1>
-                        <p class="text-blue-200 text-xs font-medium tracking-wide">Dokter Umum</p>
-                </div>
-            </header>
-
-            <nav>
-                <ul class="space-y-4">
-                    <li>
-                        <a href="newHomepageDokter.html"
-                           class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
-                            <i class='bx bxs-dashboard text-xl'></i>
-                            <span class="font-medium">Dashboard</span>
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="{{ url_for('view_jadwal_dokter') }}"
-                           class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
-                            <i class='bx bxs-calendar text-xl'></i>
-                            <span class="font-medium">Appointment</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ url_for('dokter_rekam_medis_list') }}"
-                           class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
-                            <i class='bx bxs-folder-open text-xl'></i>
-                            <span class="font-medium">Rekam Medis</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="editDokter.html"
-                           class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
-                            <i class='bx bxs-user text-xl'></i>
-                            <span class="font-medium">Profile</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-
-        <div>
-            <a href="login.html"
-               class="flex items-center gap-3 w-full px-4 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200">
-                <i class ='bx bxs-log-out text-xl'></i>
-                <span class="font-semibold">Log Out</span>
-            </a>
-        </div>
-    </aside>
-
+{% include 'sidebar_dokter.html' %}
 
     <!-- MAIN CONTENT -->
     <main class="ml-64 p-8">
-        <div class ="flex justify-between items-center mb-2">
-            <h2 class="text-3xl font-bold mb-4 mt-2">Welcome, Dr. {{ nama }}.</h2>
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-3xl font-bold mb-4 mt-2">Welcome, Dr. {{ nama }}.</h2>
+                
+                <div class="flex gap-4">
+                    <button onclick="document.getElementById('modalJadwal').classList.remove('hidden')"
+                        class="py-3 px-4 inline-flex items-center gap-x-1 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 cursor-pointer">
+                        + Add Schedule
+                    </button>
 
-            <a href="addJadwalDokter.html"
-               class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700">
-                + Add Schedule
-            </a>
-        </div>
+                    <a href="{{url_for('view_jadwal_dokter')}}"
+                    class="py-3 px-4 inline-flex items-center gap-x-1 text-xs font-medium rounded-md bg-green-600 text-white hover:bg-green-700 cursor-pointer">
+                        <i class='bx bxs-calendar-check'></i> Edit Schedule
+                    </a>
+
+                </div>
+            </div>
 
         <!--statistic + Appointment-->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -217,7 +166,75 @@
             </div>
 
         </div>        
-    </main>
+    </main> 
+
+<div id="modalJadwal" class="hidden fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity"></div>
+
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        
+        <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-100">
+            
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 flex justify-between items-center border-b border-gray-100">
+                <h3 class="text-lg font-semibold leading-6 text-gray-900 flex items-center gap-2" id="modal-title">
+                    <i class='bx bx-calendar-plus text-blue-600 text-xl'></i> Tambah Jadwal Baru
+                </h3>
+                <button type="button" onclick="document.getElementById('modalJadwal').classList.add('hidden')" class="text-gray-400 hover:text-gray-500 focus:outline-none transition-colors">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form action="{{ url_for('dokter_add_jadwal') }}" method="POST">
+                <div class="px-4 py-5 sm:p-6 space-y-5">
+                    
+                    <div>
+                        <label for="hari" class="block text-sm font-medium text-gray-700 mb-1">Hari Praktek</label>
+                        <div class="relative">
+                            <select name="hari" id="hari" class="block w-full rounded-lg border-gray-300 border bg-gray-50 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-all shadow-sm appearance-none">
+                                <option value="" disabled selected>--Choose Day--</option>
+                                <option value="Senin">Monday</option>
+                                <option value="Selasa">Tuesday</option>
+                                <option value="Rabu">Wednesday</option>
+                                <option value="Kamis">Thursday</option>
+                                <option value="Jumat">Friday</option>
+                                <option value="Sabtu">Saturday</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="jam_mulai" class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai</label>
+                            <input type="time" name="jam_mulai" id="jam_mulai" class="block w-full rounded-lg border-gray-300 border px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
+                        </div>
+
+                        <div>
+                            <label for="jam_selesai" class="block text-sm font-medium text-gray-700 mb-1">Jam Selesai</label>
+                            <input type="time" name="jam_selesai" id="jam_selesai" class="block w-full rounded-lg border-gray-300 border px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-100 gap-2">
+                    <button type="submit" class="inline-flex w-full justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:w-auto transition-colors">
+                        Save
+                    </button>
+                    <button type="button" onclick="document.getElementById('modalJadwal').classList.add('hidden')" class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
     <script>
         (function(){
             const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
