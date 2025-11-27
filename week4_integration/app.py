@@ -1184,10 +1184,77 @@ def dokter_input_rekam_medis(id_appt):
 
     return render_template('dokterInputRekamMedis.html')
 
-@app.route('/dokter/edit_profile', methods=['GET', 'POST'])
+@app.route('/dokter/profile/edit', methods=['GET', 'POST'])
 def dokter_edit_profile():
+    if 'id' not in session:
+        return redirect(url_for('login_dokter'))
 
-    return render_template('dokterEditProfile.html')
+    cur = mysql.connection.cursor()
+    dokter_id_session = session.get('id')
+
+    if request.method == 'GET':
+        query = """
+            SELECT 
+                d.nama_depan, 
+                d.nama_belakang, 
+                d.status, 
+                d.tanggal_masuk,
+                dt.telepon
+            FROM Dokter d
+            LEFT JOIN Dokter_telepon dt ON d.dokter_id = dt.dokter_id
+            WHERE d.dokter_id = %s
+            LIMIT 1
+        """
+        cur.execute(query, (dokter_id_session,))
+        data = cur.fetchone()
+        cur.close()
+
+        if data:
+            dokter_data = {
+                'nama_depan': data[0],
+                'nama_belakang': data[1],
+                'status': data[2],
+                'tanggal_masuk': data[3],
+                'telepon': data[4] if data[4] else '' 
+            }
+            return render_template('dokterEditProfile.html', dokter=dokter_data)
+        else:
+            return redirect(url_for('login_dokter'))
+
+    if request.method == 'POST':
+        nama_depan = request.form['nama_depan']
+        nama_belakang = request.form['nama_belakang']
+        telepon = request.form['telepon'] 
+        
+        try:
+            cur.execute("""
+                UPDATE Dokter 
+                SET nama_depan = %s, nama_belakang = %s 
+                WHERE dokter_id = %s
+            """, (nama_depan, nama_belakang, dokter_id_session))
+            
+            cur.execute("DELETE FROM Dokter_telepon WHERE dokter_id = %s", (dokter_id_session,))
+
+            if telepon:
+                cur.execute("""
+                    INSERT INTO Dokter_telepon (telepon, dokter_id)
+                    VALUES (%s, %s)
+                """, (telepon, dokter_id_session))
+
+            mysql.connection.commit()
+            cur.close()
+            
+            # 3. Update Session (Penting biar nama di navbar berubah)
+            session['nama_depan'] = nama_depan
+            
+            flash('Profile successfully updated!', 'success')
+            return redirect(url_for('dokter_edit_profile'))
+            
+        except Exception as e:
+            mysql.connection.rollback()
+            cur.close()
+            flash(f'Error updating profile: {str(e)}', 'error')
+            return redirect(url_for('dokter_edit_profile'))
 
 if __name__ == '__main__':
     app.run(debug=True)
