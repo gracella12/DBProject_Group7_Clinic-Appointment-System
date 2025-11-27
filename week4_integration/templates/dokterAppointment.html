@@ -124,27 +124,25 @@
                                 </div>
                             </td>
 
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex justify-center items-center">
-                                    
-                                    {% if apt.status == 'Selesai' %}
-                                        <div title="Status: Done" 
-                                             class="w-6 h-6 bg-green-500 rounded-md border border-green-600 shadow-sm transform hover:scale-110 transition-transform cursor-help">
-                                        </div>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                
+                                {% if apt.status == 'Selesai' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-green-500 text-white border border-green-600 shadow-sm">
+                                        Selesai
+                                    </span>
 
-                                    {% elif apt.status == 'On Going' %}
-                                        <div title="Status: In Progress" 
-                                             class="w-6 h-6 bg-yellow-400 rounded-md border border-yellow-500 shadow-sm animate-pulse cursor-help">
-                                        </div>
+                                {% elif apt.status == 'On Going' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-yellow-400 text-yellow-900 border border-yellow-500 shadow-sm animate-pulse">
+                                        On Going
+                                    </span>
 
-                                    {% else %}
-                                        <div title="Status: Scheduled (Not Started)" 
-                                             class="w-6 h-6 bg-red-500 rounded-md border border-red-600 shadow-sm cursor-help">
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% elif apt.status == 'Terjadwal' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-red-500 text-white border border-red-600 shadow-sm">
+                                        Terjadwal
+                                    </span>
+                                {% endif %}
+
                             </td>
-
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 
                                 {% if apt.status == 'Terjadwal' %}
@@ -158,9 +156,10 @@
                                     </a>
 
                                 {% elif apt.status == 'Selesai' %}
-                                    <a href="{{ url_for('lihat_riwayat_pasien', id=apt.pasien_id) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-navy-600 rounded-lg shadow-sm text-xs font-bold text-navy-800 bg-white hover:bg-navy-100 transition-colors">
-                                        <i class="fas fa-history mr-2"></i> History
-                                    </a>
+                                    <a href="{{ url_for('dokter_pasien_detail', id_pasien=apt.pasien_id, id_appt=apt.id) }}" 
+                                        class="w-full inline-flex justify-center items-center px-4 py-2 border border-navy-600 rounded-lg shadow-sm text-xs font-bold text-navy-800 bg-white hover:bg-navy-100 transition-colors">
+                                    History
+                                     </a>
                                 {% endif %}
 
                             </td>

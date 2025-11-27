@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Medical Record</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            900: '#021024',
+                            800: '#052659',
+                            600: '#5483B3',
+                            400: '#7DA0CA',
+                            100: '#C1E8FF',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-navy-900 min-h-screen flex flex-col">
+
+    <div class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            
+            <a href="{{ url_for('dokter_appointment_list') }}" class="flex items-center text-navy-600 hover:text-navy-900 font-bold transition-colors group">
+                <div class="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-navy-100 flex items-center justify-center mr-3 transition-colors">
+                    <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                </div>
+                Back to Appointments
+            </a>
+
+            <div class="text-sm font-semibold text-gray-400">
+                Medical Record Entry
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+ <div class="lg:col-span-4">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden sticky top-24">
+                    <div class="bg-navy-900 px-6 py-4">
+                        <h3 class="text-white font-bold text-lg">Patient Information</h3>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex flex-col items-center mb-6 text-center">
+                            
+                            <div class="w-24 h-24 bg-navy-100 rounded-full flex items-center justify-center text-navy-800 text-4xl font-bold mb-3 border-4 border-white shadow-sm">
+                                {{ pasien.nama_pasien[0]}}
+                            </div>
+
+                            <h2 class="text-xl font-bold text-navy-900">
+                                {{ pasien.nama_pasien }}
+                            </h2>
+                            
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                                ID: {{ pasien.pasien_id }}
+                            </span>
+                        </div>
+
+                        <div class="space-y-4 border-t border-gray-100 pt-4">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-500">Gender</span>
+                                <span class="text-sm font-semibold text-navy-900">{{ pasien.gender }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-500">Age</span>
+                                <span class="text-sm font-semibold text-navy-900">{{ pasien.umur }} Years Old</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-500">Appointment Date</span>
+                                <span class="text-sm font-semibold text-navy-900">{{ pasien.tanggal }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+                    
+                    <div class="mb-6 border-b border-gray-200 pb-4">
+                        <h1 class="text-2xl font-bold text-navy-900">Diagnosis & Treatment</h1>
+                        <p class="text-sm text-gray-500 mt-1">Please fill in the medical record accurately.</p>
+                    </div>
+
+                    <form action="{{ url_for('dokter_input_rekam_medis', id=pasien.id) }}" method="POST">
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm font-bold text-navy-800 mb-2 uppercase tracking-wide">Examination Date</label>
+                            <div class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-600 font-mono flex items-center cursor-not-allowed">
+                                <i class="far fa-calendar-check mr-3 text-navy-600"></i>
+                                {{ tanggal_skrg }}
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="diagnosis" class="block text-sm font-bold text-navy-800 mb-2 uppercase tracking-wide">
+                                Diagnosis <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="diagnosis" id="diagnosis" required autofocus
+                                placeholder="Example: Acute Bronchitis, Type 2 Diabetes..."
+                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-navy-800 focus:ring-navy-800 p-3 border text-lg placeholder-gray-400">
+                        </div>
+
+                        <div class="mb-8">
+                            <label for="description" class="block text-sm font-bold text-navy-800 mb-2 uppercase tracking-wide">
+                                Medical Notes / Prescription <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <textarea name="description" id="description" rows="8" required
+                                    placeholder="Write details about symptoms, physical examination, prescription, and advice..."
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-navy-800 focus:ring-navy-800 p-4 border text-base leading-relaxed"></textarea>
+                                <div class="absolute bottom-3 right-3 text-gray-400 text-xs">
+                                    <i class="fas fa-pen"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-100">
+                            <a href="{{ url_for('dokter_appointment_list') }}" 
+                               class="px-6 py-3 rounded-lg text-gray-600 font-bold hover:bg-gray-100 transition-colors">
+                                Cancel
+                            </a>
+                            <button type="submit" 
+                                class="px-8 py-3 rounded-lg bg-navy-800 text-white font-bold shadow-lg hover:bg-navy-900 hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Save & Finish
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
