@@ -9,18 +9,8 @@
 </head>
 
 <body class="bg-gray-50">
-    <header>
-        <div class="max-w-7xl mx-auto p-6 flex justify-between items-center">
-            <div class="text-xl font-['Poppins'] font-bold text-[#052659]">
-                Mayo Clinic
-            </div>
-            <nav>
-                <a href="/" class="text-gray-700 hover:text-gray-900 mx-4 font-['Inter'] font-medium">Home</a>
-                <a href="login.html" class="text-gray-700 hover:text-gray-900 mx-4 font-['Inter'] font-medium">Login</a>
-                <a href="register.html" class="text-gray-700 hover:text-gray-900 mx-4 font-['Inter'] font-medium">Register</a>
-            </nav>
-        </div>
-    </header>
+
+    {% include 'layout.html' %}
 
     <section class="relative bg-gradient-to-r from-white to-[#052659] overflow-visible">
         <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-32 relative">
@@ -164,3 +154,4 @@ if (form) {
 }
 </script>
 </html>
+{%endblock%}
