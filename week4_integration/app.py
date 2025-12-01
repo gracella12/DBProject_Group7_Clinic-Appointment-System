@@ -42,6 +42,16 @@ def home():
             
         elif role == 'pasien':
             # PASIEN: Tetap di halaman utama tapi mode login
+            cur = mysql.connection.cursor()
+            # Ambil nama depan pasien
+            cur.execute("SELECT nama_depan FROM Pasien WHERE pasien_id = %s", (session.get('id'),))
+            pasien_nama = cur.fetchone()
+            cur.close()
+            
+            if pasien_nama:
+                # Set nama depan pasien ke session, menimpa nama dokter yang tersisa
+                session['nama_depan'] = pasien_nama[0]
+
             return render_template('home.html', email=session['email'], doctors=doctors)  
             
         # Default jika role tidak dikenali
@@ -128,6 +138,9 @@ def register():
 @app.route('/logout')
 def logout():
     session.pop('email', None)
+    session.pop('role', None)
+    session.pop('id', None)
+    session.pop('nama_depan', None)
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
