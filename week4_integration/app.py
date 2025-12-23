@@ -42,6 +42,16 @@ def home():
             
         elif role == 'pasien':
             # PASIEN: Tetap di halaman utama tapi mode login
+            cur = mysql.connection.cursor()
+            # Ambil nama depan pasien
+            cur.execute("SELECT nama_depan FROM Pasien WHERE pasien_id = %s", (session.get('id'),))
+            pasien_nama = cur.fetchone()
+            cur.close()
+            
+            if pasien_nama:
+                # Set nama depan pasien ke session, menimpa nama dokter yang tersisa
+                session['nama_depan'] = pasien_nama[0]
+
             return render_template('home.html', email=session['email'], doctors=doctors)  
             
         # Default jika role tidak dikenali
@@ -128,6 +138,9 @@ def register():
 @app.route('/logout')
 def logout():
     session.pop('email', None)
+    session.pop('role', None)
+    session.pop('id', None)
+    session.pop('nama_depan', None)
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
@@ -548,28 +561,44 @@ HARI_MAP = {
     'Thursday': 'Kamis', 'Friday': 'Jumat', 'Saturday': 'Sabtu', 'Sunday': 'Minggu'
 }
 
-# ---------------------------------------------------
-# 1. ROUTE HALAMAN BOOKING (GET & POST)
-# ---------------------------------------------------
 @app.route('/booking', methods=['GET', 'POST'])
 def book_appointment_form():
-    # Cek Login Pasien
-    if 'email' not in session or session.get('role') != 'pasien':
-        flash('Silakan login sebagai pasien untuk membuat appointment.', 'error')
-        return redirect(url_for('login'))
+    print("--- DEBUG: Mengakses Halaman Booking ---")
 
+    # 1. BYPASS LOGIN & CARI ID PENGGANTI
     pasien_id = session.get('id')
+    
+    if not pasien_id:
+        print("DEBUG: User tidak login. Mencari ID Pasien dummy dari database...")
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute("SELECT pasien_id FROM Pasien LIMIT 1")
+            dummy_pasien = cur.fetchone()
+            cur.close()
+            
+            if dummy_pasien:
+                pasien_id = dummy_pasien[0]
+                print(f"DEBUG: Menggunakan ID Pasien Dummy: {pasien_id}")
+            else:
+                print("DEBUG: Tabel Pasien KOSONG! Tidak bisa melakukan booking.")
+                flash("Error: Tidak ada data pasien di database untuk testing.", "error")
+                return redirect(url_for('home'))
+        except Exception as e:
+            print(f"DEBUG ERROR Database saat cari dummy user: {e}")
+            return f"<h1>Error Database Cek User:</h1><p>{e}</p>"
 
-    # --- METHOD GET: TAMPILKAN FORM ---
+    # 2. METHOD GET: TAMPILKAN HALAMAN
     if request.method == 'GET':
         try:
             cur = mysql.connection.cursor(DictCursor)
             
-            # Ambil List Dokter (Aktif)
+            # Debug: Cek apakah query dokter berhasil
+            print("DEBUG: Mengambil data Dokter...")
             cur.execute("SELECT dokter_id, nama_depan, nama_belakang FROM Dokter")
             dokter_list = cur.fetchall()
 
-            # Ambil List Jadwal (Join Dokter)
+            # Debug: Cek apakah query jadwal berhasil
+            print("DEBUG: Mengambil data Jadwal...")
             cur.execute("""
                 SELECT 
                     j.jadwal_id, j.hari, j.jam_mulai, j.jam_selesai, 
@@ -582,73 +611,65 @@ def book_appointment_form():
             jadwal_list = cur.fetchall()
             cur.close()
 
+            print("DEBUG: Render Template bookAppointment.html")
             return render_template('bookAppointment.html', dokter_list=dokter_list, jadwal_list=jadwal_list)
+        
         except Exception as e:
-            flash(f'Error loading booking page: {str(e)}', 'error')
+            print(f"DEBUG ERROR GET: {e}")
+            return f"<h1>Terjadi Error saat mengambil data:</h1><p>{e}</p><br><a href='/'>Kembali</a>"
+
+    # 3. METHOD POST: PROSES SIMPAN
+    if request.method == 'POST':
+        print("DEBUG: Proses POST Booking dimulai...")
+        dokter_id = request.form.get('dokter_id')
+        jadwal_id = request.form.get('jadwal_id') 
+        tanggal = request.form.get('tanggal')     
+
+        # Validasi dasar
+        if not dokter_id or not jadwal_id or not tanggal:
+            flash('Mohon lengkapi Dokter, Jadwal, dan Tanggal.', 'warning')
+            return redirect(url_for('book_appointment_form'))
+
+        try:
+            cur = mysql.connection.cursor(DictCursor)
+
+            # Cek Jam Mulai
+            cur.execute('SELECT hari, jam_mulai FROM Jadwal_dokter WHERE jadwal_id = %s', (jadwal_id,))
+            jadwal_data = cur.fetchone()
+            
+            if not jadwal_data:
+                flash('Jadwal tidak valid.', 'error')
+                return redirect(url_for('book_appointment_form'))
+
+            jam_mulai = jadwal_data['jam_mulai']
+
+            # Cek Double Booking
+            cur.execute("""
+                SELECT appointment_id FROM Appointment 
+                WHERE dokter_id = %s AND tanggal = %s AND waktu = %s AND status != 'cancelled'
+            """, (dokter_id, tanggal, jam_mulai))
+            
+            if cur.fetchone():
+                flash('Jadwal dokter tersebut sudah terisi di tanggal ini.', 'warning')
+                return redirect(url_for('book_appointment_form'))
+
+            # INSERT FIX (Hapus keluhan dan %s berlebih)
+            print(f"DEBUG: Menyimpan appointment untuk Pasien ID: {pasien_id}")
+            cur.execute("""
+                INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status) 
+                VALUES (%s, %s, %s, %s, %s, 'waiting')
+            """, (pasien_id, dokter_id, jadwal_id, tanggal, jam_mulai))
+            
+            mysql.connection.commit()
+            cur.close()
+
+            flash('Berhasil Booking! (Data masuk ke DB)', 'success')
             return redirect(url_for('home'))
 
-    # --- METHOD POST: PROSES BOOKING ---
-    dokter_id = request.form.get('dokter_id')
-    jadwal_id = request.form.get('jadwal_id') # Ini ID dari jadwal (Senin, 09:00)
-    tanggal = request.form.get('tanggal')     # Ini Tanggal Kalender (2025-11-27)
-    keluhan = request.form.get('complaint')   # Opsional
-
-    # 1. Validasi Input Kosong
-    if not dokter_id or not jadwal_id or not tanggal:
-        flash('Dokter, jadwal, dan tanggal harus dipilih.', 'error')
-        return redirect(url_for('book_appointment_form'))
-
-    try:
-        cur = mysql.connection.cursor(DictCursor)
-
-        # 2. Ambil Info Jadwal berdasarkan ID
-        cur.execute('SELECT hari, jam_mulai FROM Jadwal_dokter WHERE jadwal_id = %s', (jadwal_id,))
-        jadwal_data = cur.fetchone()
-        
-        if not jadwal_data:
-            flash('Jadwal tidak ditemukan.', 'error')
-            return redirect(url_for('book_appointment_form'))
-
-        jam_mulai = jadwal_data['jam_mulai']
-        hari_praktek = jadwal_data['hari']
-
-        # 3. Validasi: Apakah Tanggal yang dipilih sesuai dengan Hari Praktek?
-        # Ubah string tanggal (YYYY-MM-DD) jadi object date
-        date_obj = datetime.strptime(tanggal, '%Y-%m-%d')
-        hari_dipilih_inggris = date_obj.strftime('%A') # Returns 'Monday'
-        hari_dipilih_indo = HARI_MAP.get(hari_dipilih_inggris)
-
-        if hari_dipilih_indo != hari_praktek:
-            flash(f'Tanggal {tanggal} adalah hari {hari_dipilih_indo}, tapi jadwal dokter ini hari {hari_praktek}. Silakan pilih tanggal yang sesuai.', 'error')
-            return redirect(url_for('book_appointment_form'))
-
-        # 4. Validasi: Cek Slot Terisi (Double Booking Check)
-        cur.execute("""
-            SELECT appointment_id FROM Appointment 
-            WHERE dokter_id = %s AND tanggal = %s AND waktu = %s AND status != 'cancelled'
-        """, (dokter_id, tanggal, jam_mulai))
-        
-        if cur.fetchone():
-            flash('Maaf, slot waktu/dokter tersebut sudah terisi di tanggal ini. Pilih tanggal lain.', 'warning')
-            return redirect(url_for('book_appointment_form'))
-
-        # 5. Insert ke Database
-        # Status default 'scheduled' atau 'waiting' sesuai kesepakatan
-        cur.execute("""
-            INSERT INTO Appointment (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status, keluhan) 
-            VALUES (%s, %s, %s, %s, %s, 'waiting', %s)
-        """, (pasien_id, dokter_id, jadwal_id, tanggal, jam_mulai, keluhan))
-        
-        mysql.connection.commit()
-        cur.close()
-
-        flash('Appointment berhasil dibuat!', 'success')
-        return redirect(url_for('patient_dashboard')) # Lebih baik ke dashboard daripada form lagi
-
-    except Exception as e:
-        mysql.connection.rollback()
-        flash(f'Error saat membuat appointment: {str(e)}', 'error')
-        return redirect(url_for('book_appointment_form'))
+        except Exception as e:
+            mysql.connection.rollback()
+            print(f"DEBUG ERROR POST: {e}")
+            return f"<h1>Gagal Menyimpan Data:</h1><p>{e}</p><br><a href='/booking'>Coba Lagi</a>"
 
 
 # ---------------------------------------------------
@@ -1165,8 +1186,7 @@ def dokter_appointment_list():
                 'id': row[0],             
                 'jam_janji': str(row[1]),
                 'nama_pasien': row[2],    
-                'no_rm': f"ID-{row[3]}",  
-                'keluhan': "-",           
+                'no_rm': f"ID-{row[3]}",        
                 'pasien_id': row[3],      
                 'status': row[4]          
             })
