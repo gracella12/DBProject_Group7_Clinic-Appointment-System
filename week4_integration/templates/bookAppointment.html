@@ -1,129 +1,302 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="min-h-screen bg-[#0B0E14] py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-4xl mx-auto">
+<div class="bg-[#0B0E14] text-white overflow-hidden scroll-smooth">
+
+<section class="relative pt-32 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-8 pt-20">
+            <h1 class="text-5xl md:text-6xl font-bold text-white">
+                Book Appointments <br> with Trusted Doctors
+            </h1>
+            <p class="text-[#7DA0CA] text-lg max-w-md">
+                Get the best medical care with our team of specialized doctors.
+            </p>
+            <div class="flex gap-4">
+                <a href="#" class="px-8 py-4 bg-[#2F80ED] rounded-full text-white font-bold">Book Now</a>
+            </div> 
+        </div>
+    </div>
+</section>
+
+<div class="w-full px-4 py-10 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    
+    <div class="flex flex-row justify-between items-center pt-8 gap-4">
         
-        <div class="mb-8">
-            <a href="{{ url_for('home') }}" class="text-[#7DA0CA] hover:text-white mb-4 inline-flex items-center gap-2 text-sm transition-colors">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Back to Home
-            </a>
-            <h1 class="text-3xl font-bold text-white mt-2">Book Your Appointment</h1>
-            <p class="text-gray-500">Choose your doctor, schedule, and visit date.</p>
+        <div class="text-center">
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white">1200+</h1>
+            <p class="text-sm md:text-lg text-gray-500 uppercase tracking-widest mt-2">Doctors</p>
         </div>
 
-        <div class="bg-[#161B22] rounded-2xl p-8 border border-[#5483B3]/20 shadow-xl">
-            <form method="POST" action="{{ url_for('book_appointment_form') }}">
-                
-                {% if session.get('id') %}
-                    <input type="hidden" name="pasien_id" value="{{ session.get('id') }}">
-                {% endif %}
-
-                <div class="mb-6">
-                    <label for="dokter_id" class="block text-sm font-medium text-gray-300 mb-2">Choose Doctor</label>
-                    <select id="dokter_id" name="dokter_id" class="w-full px-4 py-2 rounded-xl bg-[#0B0E14] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5483B3]" required>
-                        <option value="">Choose Doctor</option>
-                        {% for dokter in dokter_list %}
-                            <option value="{{ dokter['dokter_id'] }}">Dr. {{ dokter['nama_depan'] }} {{ dokter['nama_belakang'] }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="mb-6">
-                    <label for="jadwal_id" class="block text-sm font-medium text-gray-300 mb-2">Choose Schedule (Day & Time)</label>
-                    <select id="jadwal_id" name="jadwal_id" class="w-full px-4 py-2 rounded-xl bg-[#0B0E14] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5483B3]" required>
-                        <option value="" selected>Choose Doctor</option> 
-                        
-                        {% for jadwal in jadwal_list %}
-                            <option value="{{ jadwal['jadwal_id'] }}" data-dokter-id="{{ jadwal['dokter_id'] }}"> 
-                                {{ jadwal['hari'] }}: {{ jadwal['jam_mulai'] }} - {{ jadwal['jam_selesai'] }} (Dr. {{ jadwal['nama_depan'] }} {{ jadwal['nama_belakang'] }})
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="mb-6">
-                    <label for="tanggal" class="block text-sm font-medium text-gray-300 mb-2">Choose Visit Date</label>
-                    <input type="date" id="tanggal" name="tanggal" class="w-full px-4 py-2 rounded-xl bg-[#0B0E14] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5483B3]" required>
-                </div>
-                <div class="mt-8">
-                    <button type="submit" class="w-full px-4 py-3 rounded-xl bg-[#2F80ED] text-white font-bold text-lg hover:bg-[#2563eb] transition-colors shadow-lg shadow-[#2F80ED]/40">
-                        Make Appointment
-                    </button>
-                </div>
-            </form>
+        <div class="text-center">
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white">200+</h1>
+            <p class="text-sm md:text-lg text-gray-500 uppercase tracking-widest mt-2">Clinics</p>
         </div>
-        
+
+        <div class="text-center">
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white">99%</h1>
+            <p class="text-sm md:text-lg text-gray-500 uppercase tracking-widest mt-2">Satisfaction</p>
+        </div>
+
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const dokterSelect = document.getElementById('dokter_id');
-        const jadwalSelect = document.getElementById('jadwal_id');
-        
-        // 1. SIMPAN SEMUA OPSI KE MEMORI (ARRAY)
-        // Kita ambil semua option KECUALI yang pertama (placeholder)
-        // Array.from() mengubah NodeList jadi Array murni
-        const allJadwalOptions = Array.from(jadwalSelect.querySelectorAll('option')).slice(1);
-        
-        // Simpan placeholder terpisah agar mudah dipanggil
-        const placeholderOption = jadwalSelect.querySelector('option[value=""]');
-
-        function filterJadwal() {
-            const selectedDokterId = dokterSelect.value;
+    <section class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             
-            // 2. KOSONGKAN DROPDOWN JADWAL
-            // Kita hapus semua isinya dulu
-            jadwalSelect.innerHTML = '';
-            
-            // 3. PASANG KEMBALI PLACEHOLDER
-            if (placeholderOption) {
-                if (selectedDokterId) {
-                    placeholderOption.text = "-- Pilih Jadwal Tersedia --";
-                } else {
-                    placeholderOption.text = "-- Pilih Dokter Terlebih Dahulu --";
-                }
-                jadwalSelect.appendChild(placeholderOption);
-            }
-
-            // 4. FILTER DAN PASANG OPSI YANG COCOK
-            let adaJadwal = false;
-
-            allJadwalOptions.forEach(option => {
-                const dokterId = option.getAttribute('data-dokter-id');
+            <div class="relative order-2 lg:order-1">
                 
-                // Cek kesamaan ID Dokter
-                if (selectedDokterId && dokterId === selectedDokterId) {
-                    // Clone node agar aman dan tidak hilang dari memori array
-                    const newOption = option.cloneNode(true);
-                    jadwalSelect.appendChild(newOption);
-                    adaJadwal = true;
-                }
-            });
+                <div class="w-full h-[500px] rounded-[2rem] overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=1000&auto=format&fit=crop" 
+                        class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" 
+                        alt="About Us">
+                </div>
 
-            // 5. RESET PILIHAN JADWAL
-            jadwalSelect.value = "";
+                <div class="absolute bottom-0 right-0 w-48 h-48 bg-[#0B0E14] rounded-tl-[2rem] p-4">
+                    <div class="w-full h-full bg-[#2F80ED] rounded-2xl flex items-center justify-center flex-col text-center p-4">
+                        <span class="text-4xl font-bold text-white">20+</span>
+                        <span class="text-sm text-blue-100">Years Experience</span>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="order-1 lg:order-2 space-y-6 lg:pl-24 pt-20">
+                <span class="text-[#2F80ED] font-bold uppercase tracking-wider text-sm pt-6">About Us</span>
+                <h2 class="text-4xl font-bold text-white">
+                    We Help Your Health <br>Issues Solution
+                </h2>
+                <p class="text-[#7DA0CA] leading-relaxed">
+                    MAYO Clinic helps you find the best specialists in your area. We are committed to providing the most advanced medical care with a personal touch.
+                </p>
+                <ul class="space-y-4 text-gray-300">
+                    <li class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-[#2F80ED]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        24/7 Emergency Support
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-[#2F80ED]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Qualified Doctors & Nurses
+                    </li>
+                </ul>
+            </div>
+            
+        </div>
+    </section>
 
-            // 6. FEEDBACK JIKA TIDAK ADA JADWAL
-            if (selectedDokterId && !adaJadwal) {
-                placeholderOption.text = "-- Dokter ini belum memiliki jadwal --";
-            }
-        }
+    <section id="how-it-works" class="py-20 bg-[#161B22]/30">
+        <div class="max-w-7xl mx-auto px-4 text-center mb-16">
+            <h2 class="text-3xl font-bold text-white mb-4">How it Works</h2>
+            <div class="w-20 h-1 bg-[#2F80ED] mx-auto rounded-full"></div>
+        </div>
 
-        // Jalankan filter saat user mengubah pilihan dokter
-        dokterSelect.addEventListener('change', filterJadwal);
-        
-        // Jalankan sekali saat halaman dimuat (untuk mereset tampilan awal)
-        filterJadwal();
-    });
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-[#161B22] p-8 rounded-[2rem] text-center border border-[#5483B3]/10 hover:border-[#2F80ED] transition-all group">
+                <div class="w-20 h-20 mx-auto bg-[#0B0E14] rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <svg class="w-10 h-10 text-[#2F80ED]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Find a Doctor</h3>
+                <p class="text-gray-400 text-sm">Search by specialist, name, or availability to find the right match.</p>
+            </div>
+
+            <div class="bg-[#161B22] p-8 rounded-[2rem] text-center border border-[#5483B3]/10 hover:border-[#2F80ED] transition-all group relative">
+                <div class="w-20 h-20 mx-auto bg-[#2F80ED] rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(47,128,237,0.4)]">
+                    <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Book Appointment</h3>
+                <p class="text-gray-400 text-sm">Choose a schedule that fits you and confirm your booking instantly.</p>
+            </div>
+
+            <div class="bg-[#161B22] p-8 rounded-[2rem] text-center border border-[#5483B3]/10 hover:border-[#2F80ED] transition-all group">
+                <div class="w-20 h-20 mx-auto bg-[#0B0E14] rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <svg class="w-10 h-10 text-[#2F80ED]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Get Solution</h3>
+                <p class="text-gray-400 text-sm">Visit the doctor and get the best medical treatment for your health.</p>
+            </div>
+        </div>
+    </section>
+
+<section id="doctors" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-24 relative">
+
+  <!-- Header -->
+  <div class="text-center mb-14">
+    <h2 class="text-3xl font-bold text-white inline-block border-b-4 border-[#2F80ED] pb-2">
+      Our Team
+    </h2>
+    <p class="text-[#7DA0CA] mt-4">Meet our experienced specialists</p>
+  </div>
+
+  <!-- Slider Wrapper -->
+  <div class="relative px-6 md:px-12">
+
+    <!-- Prev Button -->
+    <button id="btn-prev"
+      class="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full
+             bg-[#161B22] border border-white/10 text-[#2F80ED]
+             flex items-center justify-center hover:bg-[#2F80ED] hover:text-white
+             transition hidden md:flex">
+      ‹
+    </button>
+
+    <!-- Scroll Area -->
+    <div id="doctor-scroll"
+      class="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide">
+
+      {% if dokter_list %}
+        {% for doctor in dokter_list %}
+        <div
+          class="group flex-none w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]
+                 bg-[#161B22] rounded-3xl p-5 border border-white/10
+                 hover:border-[#2F80ED]/60 transition-all duration-300 flex flex-col">
+
+          <!-- Photo -->
+          <div class="h-64 rounded-2xl overflow-hidden mb-5 bg-gray-800">
+            {% set foto_file = doctor[5] if doctor[5] else 'default.jpg' %}
+            <img src="{{ url_for('static', filename='images/' ~ foto_file) }}"
+                 class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                 alt="Dr. {{ doctor[1] }}"
+                 onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default.jpg') }}';">
+          </div>
+
+          <!-- Info -->
+          <div class="flex-1 flex flex-col">
+            <h3 class="text-xl font-bold text-white mb-1">
+              Dr. {{ doctor[1] }} {{ doctor[2] }}
+            </h3>
+            <p class="text-[#7DA0CA] text-sm mb-1">{{ doctor[3] }}</p>
+            <p class="text-gray-500 text-xs mb-6">10 years experience</p>
+
+            <!-- Button -->
+            <a href="{{ url_for('view_jadwal_dokter', id=doctor[0]) }}"
+               class="mt-auto inline-flex items-center justify-center gap-2
+                      w-full py-3 rounded-full border border-[#2F80ED]
+                      text-[#2F80ED] font-semibold
+                      hover:bg-[#2F80ED] hover:text-white transition group">
+              Book Now
+              <svg class="w-4 h-4 transition-transform group-hover:translate-x-1"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="w-full text-center py-12 text-gray-500">
+          <p>No doctors available.</p>
+        </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Next Button -->
+    <button id="btn-next"
+      class="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full
+             bg-[#161B22] border border-white/10 text-[#2F80ED]
+             flex items-center justify-center hover:bg-[#2F80ED] hover:text-white
+             transition hidden md:flex">
+      ›
+    </button>
+
+  </div>
+</section>
+
+<!-- Slider Script -->
+<script>
+  const container = document.getElementById('doctor-scroll');
+  const nextBtn = document.getElementById('btn-next');
+  const prevBtn = document.getElementById('btn-prev');
+
+  nextBtn.addEventListener('click', () => {
+    container.scrollBy({ left: container.clientWidth, behavior: 'smooth' });
+  });
+
+  prevBtn.addEventListener('click', () => {
+    container.scrollBy({ left: -container.clientWidth, behavior: 'smooth' });
+  });
 </script>
-<<<<<<< HEAD
-</html>
 
-{%endblock%}
-=======
 
+    <section class="py-20 bg-[#161B22]/30 border-y border-[#5483B3]/10 pt-20">
+        <div class="max-w-7xl mx-auto px-4 text-center mb-16">
+            <h2 class="text-3xl font-bold text-white">Testimonials</h2>
+            <p class="text-[#7DA0CA] my-10">What our patients say</p>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-[#0B0E14] p-8 rounded-3xl border border-[#5483B3]/20 relative">
+                <div class="text-[#2F80ED] text-6xl absolute top-4 left-6 opacity-30">“</div>
+                <p class="text-gray-400 mt-6 mb-6 leading-relaxed relative z-10">
+                    "The service was incredible. Dr. Strange really listened to my problems and gave the best solution."
+                </p>
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-white font-bold">SJ</div>
+                    <div>
+                        <h4 class="text-white font-bold text-sm">Sarah Jenkins</h4>
+                        <p class="text-[#2F80ED] text-xs">Patient</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-[#0B0E14] p-8 rounded-3xl border border-[#5483B3]/20 relative">
+                <div class="text-[#2F80ED] text-6xl absolute top-4 left-6 opacity-30">“</div>
+                <p class="text-gray-400 mt-6 mb-6 leading-relaxed relative z-10">
+                    "Booking an appointment was super easy. I didn't have to wait in line. The facility is clean."
+                </p>
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-white font-bold">MW</div>
+                    <div>
+                        <h4 class="text-white font-bold text-sm">Michael Wong</h4>
+                        <p class="text-[#2F80ED] text-xs">Patient</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-[#0B0E14] p-8 rounded-3xl border border-[#5483B3]/20 relative">
+                <div class="text-[#2F80ED] text-6xl absolute top-4 left-6 opacity-30">“</div>
+                <p class="text-gray-400 mt-6 mb-6 leading-relaxed relative z-10">
+                    "Very professional staff. The dark theme website is also very cool and easy to use on my eyes!"
+                </p>
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-white font-bold">JD</div>
+                    <div>
+                        <h4 class="text-white font-bold text-sm">Jessica Doe</h4>
+                        <p class="text-[#2F80ED] text-xs">Patient</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 px-4">
+        <div class="max-w-5xl mx-auto bg-gradient-to-r from-[#2F80ED] to-[#5483B3] rounded-[2.5rem] p-12 text-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
+            
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6 relative z-10">Ready to prioritize your health?</h2>
+            <p class="text-blue-100 text-lg mb-8 max-w-2xl mx-auto relative z-10">Find the right specialist and book your appointment in less than 2 minutes.</p>
+            
+            <a href="#doctors" class="inline-block px-8 py-4 rounded-full bg-white text-[#2F80ED] font-bold hover:bg-gray-100 transition-colors shadow-xl relative z-10">
+                Browse Doctors
+            </a>
+        </div>
+    </section>
+</div>
+
+<style>
+    @keyframes bounce-slow {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    .animate-bounce-slow {
+        animation: bounce-slow 3s infinite ease-in-out;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
 {% endblock %}
->>>>>>> e12bf136566eda08ba25e518298fe37e0394e85d
