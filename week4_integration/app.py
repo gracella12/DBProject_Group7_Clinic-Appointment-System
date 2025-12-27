@@ -70,12 +70,11 @@ def login():
         
         cur = mysql.connection.cursor()
         
-        # --- 1. Pengecekan Pasien (Menggunakan HASH) ---
+        # --- 1. Pengecekan Pasien (HASH) ---
         cur.execute('SELECT pasien_id, email, password FROM Pasien WHERE email = %s', (email,))
         pasien = cur.fetchone()
         
         if pasien:
-            # Pasien: Menggunakan check_password_hash karena didaftarkan melalui form /register
             if check_password_hash(pasien[2], pwd):
                 session['email'] = pasien[1]
                 session['role'] = 'pasien'
@@ -84,13 +83,13 @@ def login():
                 flash('Login successful!', 'success')
                 return redirect(url_for('home')) 
         
-        # --- 2. Pengecekan Resepsionis (Menggunakan PLAINTEXT) ---
+        # --- 2. Pengecekan Resepsionis (UBAH JADI HASH DISINI) ---
         cur.execute('SELECT resepsionis_id, email, password FROM Resepsionis WHERE email = %s', (email,))
         resepsionis = cur.fetchone()
         
         if resepsionis:
-            # Resepsionis: Menggunakan perbandingan string langsung (plaintext)
-            if resepsionis[2] == pwd:
+            # PERBAIKAN: Ganti == pwd dengan check_password_hash
+            if check_password_hash(resepsionis[2], pwd):
                 session['email'] = resepsionis[1]
                 session['role'] = 'resepsionis'
                 session['id'] = resepsionis[0]
@@ -98,12 +97,11 @@ def login():
                 flash('Welcome Resepsionis!', 'success')
                 return redirect(url_for('homepageResepsionis')) 
 
-        # --- 3. Pengecekan Dokter (Menggunakan PLAINTEXT) ---
+        # --- 3. Pengecekan Dokter (Masih Plaintext - Biarkan dulu kalau Dokter belum di-fix) ---
         cur.execute('SELECT dokter_id, email, password FROM Dokter WHERE email = %s', (email,))
         dokter = cur.fetchone()
         
         if dokter:
-            # Dokter: Menggunakan perbandingan string langsung (plaintext)
             if dokter[2] == pwd:
                 session['email'] = dokter[1]
                 session['role'] = 'dokter'
@@ -1446,6 +1444,8 @@ def dokter_edit_profile():
             cur.close()
             flash(f'Error updating profile: {str(e)}', 'error')
             return redirect(url_for('dokter_edit_profile'))
+
+from werkzeug.security import check_password_hash
 
 if __name__ == '__main__':
     app.run(debug=True)
