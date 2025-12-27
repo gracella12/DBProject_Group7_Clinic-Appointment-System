@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Schedules</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen p-6">
+    <header class="flex items-center mb-10 mt-5 p-5 rounded-2xl">
+    
+        <div class="ml-4">
+        <h1 class="text-[#021024] text-4xl sm:text-5xl font-extrabold tracking-tight drop-shadow">
+            Doctor Schedules
+        </h1>
+        <p class="text-[#021024] text-lg mt-5 sm:text-xl">
+            Berikut adalah jadwal praktek dokter di klinik kami.
+        </p>
+        </div>
+    
+        <div class="ml-auto flex items-center gap-4">
+    
+        <a href="{{ url_for('dokter_dashboard') }}"
+             class="px-4 py-2 bg-[#C1E8FF] text-[#001020] font-semibold rounded-lg shadow hover:bg-[#9BD9FF] transition-all duration-200">
+            Kembali
+        </a>
+    
+        </div>
+    
+    </header>
+    
+        <main class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+    
+        <table class="min-w-full table-auto border-collapse border border-gray-300">
+            <thead>
+            <tr class="bg-gray-100">
+                <th class="border border-gray-300 px-4 py-2 text-left">Doctor Name</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Day</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Start Time</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">End Time</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for jadwal in jadwal_list %}
+            <tr class="hover:bg-gray-50">
+                <td class="border border-gray-300 px-4 py-2">{{ jadwal[5] }} {{ jadwal[6] }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ jadwal[1] }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ jadwal[2] }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ jadwal[3] }}</td>
+                <td class="border border-gray-300 px-4 py-2">
+                    <div class="flex gap-2">
+                        <a href="{{ url_for('edit_jadwal', id=jadwal[0]) }}" class="px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">Edit</a>
+                        <a href="{{ url_for('delete_jadwal', id=jadwal[0]) }}" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600" onclick="return confirm('Are you sure you want to delete this schedule?')">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+</body>
+</html>

@@ -1,138 +1,102 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Daftar Jadwal Dokter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        .btn {
-            padding: 8px 15px;
-            text-decoration: none;
-            border-radius: 4px;
-            display: inline-block;
-            margin: 2px;
-        }
-        .btn-add {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .btn-delete {
-            background-color: #f44336;
-            color: white;
-        }
-        .btn-add:hover {
-            background-color: #45a049;
-        }
-        .btn-delete:hover {
-            background-color: #da190b;
-        }
-        .back-link {
-            display: inline-block;
-            margin-top: 15px;
-            color: #2196F3;
-            text-decoration: none;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        .flash-message {
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        .flash-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .flash-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .actions {
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Daftar Jadwal Dokter</h1>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+{% extends "layout.html" %}
 
-        {% if jadwal_list %}
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nama Dokter</th>
-                    <th>Hari</th>
-                    <th>Jam Mulai</th>
-                    <th>Jam Selesai</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for jadwal in jadwal_list %}
-                <tr>
-                    <td>{{ jadwal[0] }}</td>
-                    <td>{{ jadwal[5] }} {{ jadwal[6] }}</td>
-                    <td>{{ jadwal[1] }}</td>
-                    <td>{{ jadwal[2] }}</td>
-                    <td>{{ jadwal[3] }}</td>
-                    <td>
-                        <a href="{{ url_for('delete_jadwal', id=jadwal[0]) }}" 
-                           class="btn btn-delete"
-                           onclick="return confirm('Apakah Anda yakin ingin menghapus jadwal ini?')">Hapus</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p style="text-align: center; color: #999; margin-top: 30px;">Belum ada jadwal. Tambahkan jadwal baru!</p>
-        {% endif %}
-
-        <a href="{{ url_for('home') }}" class="back-link">← Kembali ke Home</a>
+{% block content %}
+<div class="min-h-screen bg-[#0B0E14] relative overflow-hidden pb-20 pt-10">
+    
+    <div class="absolute top-0 left-0 w-full h-[800px] z-0 pointer-events-none">
+        <div class="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-[#0B0E14] to-transparent"></div>
+        <div class="absolute inset-0 bg-[#052659]/10 mix-blend-multiply"></div>
     </div>
-</body>
-</html>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4 drop-shadow-lg">
+            Doctor's <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#7DA0CA] to-[#C1E8FF]">Schedule</span>
+        </h1>
+        <p class="text-[#C1E8FF] text-lg max-w-2xl mx-auto drop-shadow-md">
+            Check our specialists' availability here. Find the perfect time for your health consultation.
+        </p>
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            
+            {# Define mapping: DB Value (Indo) -> Display Value (English) #}
+            {% set days_map = {
+                'Senin': 'Monday', 
+                'Selasa': 'Tuesday', 
+                'Rabu': 'Wednesday', 
+                'Kamis': 'Thursday', 
+                'Jumat': 'Friday', 
+                'Sabtu': 'Saturday', 
+                'Minggu': 'Sunday'
+            } %}
+            
+            {# Loop through the keys (Indonesian names) to match Database data #}
+            {% for hari_db in ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] %}
+            
+            <div class="bg-[#161B22] rounded-[2rem] p-6 border border-[#5483B3]/20 hover:border-[#5483B3]/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(84,131,179,0.1)] flex flex-col h-full">
+                
+                <div class="flex items-center gap-3 mb-6 border-b border-gray-800 pb-4">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#5483B3] to-[#C1E8FF] flex items-center justify-center text-[#021024] shadow-lg">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">{{ days_map[hari_db] }}</h2>
+                </div>
+
+                <div class="space-y-4 flex-grow">
+                    {% set ns = namespace(found=false) %}
+                    
+                    {% for jadwal in jadwal_list %}
+                        {# Compare with Indonesian name from DB #}
+                        {% if jadwal[1] == hari_db %}
+                            {% set ns.found = true %}
+                            <div class="group relative bg-[#0B0E14] rounded-xl p-4 border border-gray-800 hover:border-[#5483B3] transition-all">
+                                <div class="flex justify-between items-center gap-4">
+                                    
+                                    <h3 class="font-bold text-[#C1E8FF] group-hover:text-white transition-colors text-sm md:text-base">
+                                        Dr. {{ jadwal[5] }} {{ jadwal[6] }}
+                                    </h3>
+                                    
+                                    <div class="shrink-0 text-right">
+                                        <span class="bg-[#5483B3]/10 px-2 py-1 rounded text-[#5483B3] font-mono text-xs font-bold whitespace-nowrap">
+                                            {{ jadwal[2] }} - {{ jadwal[3] }}
+                                        </span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if not ns.found %}
+                        <div class="h-full flex flex-col items-center justify-center text-center py-6 opacity-40">
+                            <p class="text-sm text-gray-500 italic">No appointments available</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if ns.found %}
+                <div class="mt-6 pt-4 border-t border-gray-800">
+                    <a href="{{ url_for('book_appointment_form') }}" class="block w-full py-2 rounded-lg bg-[#5483B3]/10 text-[#5483B3] text-sm font-bold text-center hover:bg-[#5483B3] hover:text-white transition-all">
+                        Book Appointment
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+        </div>
+
+        <div class="mt-12 text-center">
+            <a href="{{ url_for('home') }}" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-[#0B0E14] py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        
+        <div class="mb-8">
+            <a href="{{ url_for('home') }}" class="text-[#7DA0CA] hover:text-white mb-4 inline-flex items-center gap-2 text-sm transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back to Home
+            </a>
+            <h1 class="text-3xl font-bold text-white mt-2">Book Your Appointment</h1>
+            <p class="text-gray-500">Choose your doctor, schedule, and visit date.</p>
+        </div>
+
+        <div class="bg-[#161B22] rounded-2xl p-8 border border-[#5483B3]/20 shadow-xl">
+            <form method="POST" action="{{ url_for('book_appointment_form') }}">
+                
+                {% if session.get('id') %}
+                    <input type="hidden" name="pasien_id" value="{{ session.get('id') }}">
+                {% endif %}
+
+                <div class="mb-6">
+                    <label for="dokter_id" class="block text-sm font-medium text-gray-300 mb-2">Choose Doctor</label>
+                    <select id="dokter_id" name="dokter_id" class="w-full px-4 py-2 rounded-xl bg-[#0B0E14] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5483B3]" required>
+                        <option value="">Choose Doctor</option>
+                        {% for dokter in dokter_list %}
+                            <option value="{{ dokter['dokter_id'] }}">Dr. {{ dokter['nama_depan'] }} {{ dokter['nama_belakang'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label for="jadwal_id" class="block text-sm font-medium text-gray-300 mb-2">Choose Schedule (Day & Time)</label>
+                    <select id="jadwal_id" name="jadwal_id" class="w-full px-4 py-2 rounded-xl bg-[#0B0E14] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5483B3]" required>
+                        <option value="" selected>Choose Doctor</option> 
+                        
+                        {% for jadwal in jadwal_list %}
+                            <option value="{{ jadwal['jadwal_id'] }}" data-dokter-id="{{ jadwal['dokter_id'] }}"> 
+                                {{ jadwal['hari'] }}: {{ jadwal['jam_mulai'] }} - {{ jadwal['jam_selesai'] }} (Dr. {{ jadwal['nama_depan'] }} {{ jadwal['nama_belakang'] }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="tanggal" class="block text-sm font-medium text-gray-300 mb-2">Choose Visit Date</label>
+                    <input type="date" id="tanggal" name="tanggal" class="w-full px-4 py-2 rounded-xl bg-[#0B0E14] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5483B3]" required>
+                </div>
+                <div class="mt-8">
+                    <button type="submit" class="w-full px-4 py-3 rounded-xl bg-[#2F80ED] text-white font-bold text-lg hover:bg-[#2563eb] transition-colors shadow-lg shadow-[#2F80ED]/40">
+                        Make Appointment
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dokterSelect = document.getElementById('dokter_id');
+        const jadwalSelect = document.getElementById('jadwal_id');
+        
+        // 1. SIMPAN SEMUA OPSI KE MEMORI (ARRAY)
+        // Kita ambil semua option KECUALI yang pertama (placeholder)
+        // Array.from() mengubah NodeList jadi Array murni
+        const allJadwalOptions = Array.from(jadwalSelect.querySelectorAll('option')).slice(1);
+        
+        // Simpan placeholder terpisah agar mudah dipanggil
+        const placeholderOption = jadwalSelect.querySelector('option[value=""]');
+
+        function filterJadwal() {
+            const selectedDokterId = dokterSelect.value;
+            
+            // 2. KOSONGKAN DROPDOWN JADWAL
+            // Kita hapus semua isinya dulu
+            jadwalSelect.innerHTML = '';
+            
+            // 3. PASANG KEMBALI PLACEHOLDER
+            if (placeholderOption) {
+                if (selectedDokterId) {
+                    placeholderOption.text = "-- Pilih Jadwal Tersedia --";
+                } else {
+                    placeholderOption.text = "-- Pilih Dokter Terlebih Dahulu --";
+                }
+                jadwalSelect.appendChild(placeholderOption);
+            }
+
+            // 4. FILTER DAN PASANG OPSI YANG COCOK
+            let adaJadwal = false;
+
+            allJadwalOptions.forEach(option => {
+                const dokterId = option.getAttribute('data-dokter-id');
+                
+                // Cek kesamaan ID Dokter
+                if (selectedDokterId && dokterId === selectedDokterId) {
+                    // Clone node agar aman dan tidak hilang dari memori array
+                    const newOption = option.cloneNode(true);
+                    jadwalSelect.appendChild(newOption);
+                    adaJadwal = true;
+                }
+            });
+
+            // 5. RESET PILIHAN JADWAL
+            jadwalSelect.value = "";
+
+            // 6. FEEDBACK JIKA TIDAK ADA JADWAL
+            if (selectedDokterId && !adaJadwal) {
+                placeholderOption.text = "-- Dokter ini belum memiliki jadwal --";
+            }
+        }
+
+        // Jalankan filter saat user mengubah pilihan dokter
+        dokterSelect.addEventListener('change', filterJadwal);
+        
+        // Jalankan sekali saat halaman dimuat (untuk mereset tampilan awal)
+        filterJadwal();
+    });
+</script>
+<<<<<<< HEAD
+</html>
+
+{%endblock%}
+=======
+
+{% endblock %}
+>>>>>>> e12bf136566eda08ba25e518298fe37e0394e85d

@@ -8,226 +8,239 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 
-<body>
 <body class="bg-gray-50">
 
-    <aside class="fixed top-0 left-0 bottom-0 w-64 h-screen bg-[#052659] flex flex-col justify-between p-6 shadow-xl z-50">
-        
-        <div>
-            <header class="flex items-center gap-3 mb-10">
-                <div class="w-8 h-8 bg-white rounded flex justify-center text-[#052659] font-bold text-xl">
-                    <img src="logobright.jpg" alt="Logo" class="w-6 h-6">
-                </div>
+    <!-- SIDEBAR -->
+    {% include 'sidebar_dokter.html' %}
 
-                <div class="flex flex-col">
-                        <h1 class="text-white text-lg font-bold leading-tight">Mayo Clinic</h1>
-                        <p class="text-blue-200 text-xs font-medium tracking-wide">Dokter Umum</p>
-                </div>
-            </header>
-
-            <nav>
-                <ul class="space-y-4">
-                    <li>
-                        <a href="newHomepageDokter.html" class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
-                            <i class='bx bxs-dashboard text-xl'></i>
-                            <span class="font-medium">Dashboard</span>
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="{{ url_for('view_jadwal_dokter') }}" class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
-                            <i class='bx bxs-calendar text-xl'></i>
-                            <span class="font-medium">Appointment</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ url_for('view_pasien_dokter') }}" class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
-                            <i class='bx bxs-folder-open text-xl'></i>
-                            <span class="font-medium">Rekam Medis</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="editDokter.html" class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all">
-                            <i class='bx bxs-user text-xl'></i>
-                            <span class="font-medium">Profile</span>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-
-        <div>
-            <a href="login.html" class="flex items-center gap-3 w-full px-4 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200">
-                <i class ='bx bxs-log-out text-xl'></i>
-                <span class="font-semibold">Log Out</span>
-            </a>
-        </div>
-    </aside>
-
+    <!-- MAIN CONTENT -->
     <main class="ml-64 p-8">
-        <div class ="flex justify-between items-center mb-2">
-            <div>
+            <div class="flex justify-between items-center mb-2">
                 <h2 class="text-3xl font-bold mb-4 mt-2">Welcome, Dr. {{ nama }}.</h2>
-                <p class="text-gray-600"> Have a nice day and great work</p>
+                
+                <div class="flex gap-4">
+                    <button onclick="document.getElementById('modalJadwal').classList.remove('hidden')"
+                        class="py-3 px-4 inline-flex items-center gap-x-1 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 cursor-pointer">
+                        + Add Schedule
+                    </button>
+
+                    <a href="{{url_for('view_jadwal_dokter')}}"
+                    class="py-3 px-4 inline-flex items-center gap-x-1 text-xs font-medium rounded-md bg-green-600 text-white hover:bg-green-700 cursor-pointer">
+                        <i class='bx bxs-calendar-check'></i> Edit Schedule
+                    </a>
+
+                </div>
             </div>
-            <div>
-                <a href="addJadwalDokter.html" class="py-4 px-5 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
-                    + Add Schedule
-                </a>
-            </div>
-        </div>
 
         <!--statistic + Appointment-->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
 
-                <div class="lg:col-span-2 flex flex-col gap-6">
+            <div class="lg:col-span-2 flex flex-col gap-6">
 
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <!-- STATISTIC -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    
+                    <div class="grid grid-cols-2 gap-6 md:divide-x divide-gray-100">
                         
-                        <div class="grid grid-cols-2 gap-6 md:divide-x divide-gray-100">
-                            
-                            <div class="pr-4">
-                                <h3 class="font-bold text-gray-500 text-sm uppercase tracking-wide mb-2">Today's Statistic</h3>
+                        <div class="pr-4">
+                            <h3 class="font-bold text-gray-500 text-sm uppercase tracking-wide mb-2">Today's Statistic</h3>
 
-                                <div class="grid grid-cols-2 gap-4 flex items-center">
-                                    
-                                    <!--fetch banyak pasien hari itu-->
-                                    <div class="flex flex-col mt-4 items-center">
-                                        <span class="text-4xl font-bold text-gray-900">{{ appointments_today|length }}</span>
-                                        <span class="text-sm text-gray-400 mb-1 mt-2">Patient</span>
-                                    </div>
-                                    
-                                    <!--fetch banyak pasien upcoming-->
-                                    <div class="flex flex-col mt-4 items-center">
-                                        <span class="text-4xl font-bold text-gray-900">{{ upcoming_count }}</span>
-                                        <span class="text-sm text-gray-400 mb-1 mt-2">Upcoming</span>
-                                    </div>
-                                    
+                            <div class="grid grid-cols-2 gap-4 flex items-center">
+                                
+                                <div class="flex flex-col mt-4 items-center">
+                                    <span class="text-4xl font-bold text-gray-900">{{ stats.today_appointments }}</span>
+                                    <span class="text-sm text-gray-400 mb-1 mt-2">Patient</span>
                                 </div>
+                                
+                                <div class="flex flex-col mt-4 items-center">
+                                    <span class="text-4xl font-bold text-gray-900">{{ stats.upcoming_appointments }}</span>
+                                    <span class="text-sm text-gray-400 mb-1 mt-2">Upcoming</span>
+                                </div>
+                                
                             </div>
+                        </div>
 
-                            <div class="md:pl-6">
-                                <h3 class="font-bold text-gray-500 text-sm uppercase tracking-wide mb-2">Your Schedule</h3>
-                                <div class="flex flex-col gap-2 overflow-y-auto max-h-40 pr-2">
-                                    {% for item in jadwal_saya %}
-                                    <div class="flex flex-row items-center justify-between mt-4">
-                                        <p class="font-semibold text-gray-800">{{ item.hari }}</p>
-                                        <p class="text-xs text-gray-800">{{ item.jam_mulai }} - {{ item.jam_selesai }} WIB</p>
-                                    </div>
-
-                                    {% else %}
-                                    <div class="flex flex-col items-center justify-center h-full py-4 text-center">
-                                        <p class="text-sm text-gray-400 italic">Belum ada jadwal praktek.</p>
-                                    </div>
-                                    
-                                    {% endfor %}
-                                    
+                        <div class="md:pl-6">
+                            <h3 class="font-bold text-gray-500 text-sm uppercase tracking-wide mb-2">Your Schedule</h3>
+                            <div class="flex flex-col gap-2 overflow-y-auto max-h-40 pr-2">
+                                {% for item in jadwal_saya %}
+                                <div class="flex flex-row items-center justify-between mt-4">
+                                    <p class="font-semibold text-gray-800">{{ item.hari }}</p>
+                                    <p class="text-xs text-gray-800">{{ item.jam_mulai }} - {{ item.jam_selesai }} WIB</p>
                                 </div>
+                                {% else %}
+                                <div class="flex flex-col items-center justify-center h-full py-4 text-center">
+                                    <p class="text-sm text-gray-400 italic">Belum ada jadwal praktek.</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- TODAY APPOINTMENT (UPDATED VERSION) -->
+                <div class="bg-white rounded-xl shadow-md border border-navy-400 p-6 h-96 overflow-hidden flex flex-col">
+                    <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                        <h3 class="font-bold text-lg text-navy-900">Today's Appointments</h3>
+                        <a href="{{ url_for('dokter_appointment_list') }}" class="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline">See All</a>
+                    </div>
+
+                    <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar">
+                        {% if appointments_today %}
+                            {% for appt in appointments_today %}
+                                {% set st = appt.get('status', 'Terjadwal') %}
+                                
+                                <div class="mb-3 flex items-center justify-between p-4 rounded-xl transition-all border border-gray-100 hover:border-navy-400 hover:shadow-sm bg-gray-50 hover:bg-white group">
+                                    
+                                    <div class="flex flex-col">
+                                        <div class="font-bold text-navy-900 text-sm mb-1">
+                                            {{ appt.get('nama') }}
+                                        </div>
+                                        <div class="flex items-center gap-3 text-xs text-gray-500">
+                                            <span class="flex items-center gap-1"><i class="far fa-clock"></i> {{ appt.get('waktu') }}</span>
+                                            <span class="text-gray-300">|</span>
+                                            <span class="font-mono">ID: {{ appt.get('appointment_id') }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        {% if st in ['Selesai', 'done', 'completed'] %}
+                                            <a href="{{ url_for('dokter_input_rekam_medis', id=appt.get('appointment_id')) }}"
+                                               class="py-1.5 px-3 inline-flex items-center gap-x-1 text-xs font-bold rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100">
+                                                <i class="fas fa-check-circle"></i> Done
+                                            </a>
+
+                                        {% elif st == 'cancelled' %}
+                                            <span class="py-1.5 px-3 inline-flex items-center text-xs font-medium rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">
+                                                Cancelled
+                                            </span>
+
+                                        {% else %}
+                                            <!-- PERBAIKAN URL: parameter id=... bukan appointment_id=... -->
+                                            <a href="{{ url_for('dokter_input_rekam_medis', id=appt.get('appointment_id')) }}"
+                                               class="py-2 px-4 inline-flex items-center gap-x-2 text-xs font-bold rounded-lg bg-navy-800 text-white hover:bg-navy-900 shadow-sm hover:shadow-md transition-all">
+                                                <i class="fas fa-stethoscope"></i> Examine
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="flex flex-col items-center justify-center h-full text-gray-400">
+                                <i class="far fa-calendar-check text-4xl mb-2 opacity-50"></i>
+                                <p class="text-sm italic">No appointments for today.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- RIGHT SIDEBAR -->
+            <div class="flex flex-col gap-6">
+
+                <!-- SIMPLE CALENDAR -->
+                <div class="col-span-1 bg-white p-6 rounded-xl shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="prevBtn" class="text-gray-600 hover:text-black">&lt;</button>
+                        <h3 id="monthYear" class="text-lg font-bold text-gray-800"></h3>
+                        <button id="nextBtn" class="text-gray-600 hover:text-black">&gt;</button>
+                    </div>
+
+                    <div class="grid grid-cols-7 text-center text-gray-500 text-sm mb-2">
+                        <div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div>
+                        <div>Kam</div><div>Jum</div><div>Sab</div>
+                    </div>
+
+                    <div id="daysGrid" class="grid grid-cols-7 gap-1 text-center"></div>
+                </div>
+
+                <!-- NOTIFICATIONS -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-full">
+                    <h3 class="font-bold text-lg text-gray-800">Notifications</h3>
+                    <ul class="mt-4 space-y-3 text-sm text-gray-600">
+                        <li class="flex gap-2">
+                            <span class="text-blue-500">•</span> Rapat Dokter jam 13:00
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-blue-500">•</span> Update stok obat masuk
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>        
+    </main> 
+
+<div id="modalJadwal" class="hidden fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity"></div>
+
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        
+        <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-100">
+            
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 flex justify-between items-center border-b border-gray-100">
+                <h3 class="text-lg font-semibold leading-6 text-gray-900 flex items-center gap-2" id="modal-title">
+                    <i class='bx bx-calendar-plus text-blue-600 text-xl'></i> Tambah Jadwal Baru
+                </h3>
+                <button type="button" onclick="document.getElementById('modalJadwal').classList.add('hidden')" class="text-gray-400 hover:text-gray-500 focus:outline-none transition-colors">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form action="{{ url_for('dokter_add_jadwal') }}" method="POST">
+                <div class="px-4 py-5 sm:p-6 space-y-5">
+                    
+                    <div>
+                        <label for="hari" class="block text-sm font-medium text-gray-700 mb-1">Hari Praktek</label>
+                        <div class="relative">
+                            <select name="hari" id="hari" class="block w-full rounded-lg border-gray-300 border bg-gray-50 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-all shadow-sm appearance-none">
+                                <option value="" disabled selected>--Choose Day--</option>
+                                <option value="Senin">Monday</option>
+                                <option value="Selasa">Tuesday</option>
+                                <option value="Rabu">Wednesday</option>
+                                <option value="Kamis">Thursday</option>
+                                <option value="Jumat">Friday</option>
+                                <option value="Sabtu">Saturday</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-96 overflow-y-auto">
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-auto">
-    
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-lg text-gray-800">Today Appointment</h3>
-        <a href="displayAppoinment.html" class="text-sm text-blue-600 hover:underline">Lihat Semua</a>
-    </div>
-    
-    <div class="space-y-4">
-        {% for appt in appointments_today %}
-        {% set st = (appt.status or 'waiting')|lower %}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="jam_mulai" class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai</label>
+                            <input type="time" name="jam_mulai" id="jam_mulai" class="block w-full rounded-lg border-gray-300 border px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
+                        </div>
 
-        <div class="flex items-center justify-between p-3 rounded-lg border border-transparent hover:border-gray-100 transition-colors w-full">
+                        <div>
+                            <label for="jam_selesai" class="block text-sm font-medium text-gray-700 mb-1">Jam Selesai</label>
+                            <input type="time" name="jam_selesai" id="jam_selesai" class="block w-full rounded-lg border-gray-300 border px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
+                        </div>
+                    </div>
 
-            <div class="flex flex-col gap-1">
-                <p class="font-semibold text-gray-800">{{ appt.nama }}</p>
-                <div class="flex items-center gap-2">
-                    <p class="text-sm text-gray-500">{{ appt.waktu }} WIB</p>
-
-                    {% if st in ['waiting','booked'] %}
-                        <span class="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 text-[10px] font-bold uppercase tracking-wide border border-yellow-200">Waiting</span>
-                    {% elif st in ['in progress','in_progress','confirmed','ongoing'] %}
-                        <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold uppercase tracking-wide border border-blue-200">In Progress</span>
-                    {% elif st in ['done','completed'] %}
-                        <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide border border-green-200">Completed</span>
-                    {% elif st == 'cancelled' %}
-                        <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[10px] font-bold uppercase tracking-wide border border-gray-200">Cancelled</span>
-                    {% else %}
-                        <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[10px] font-bold uppercase tracking-wide border border-gray-200">{{ appt.status }}</span>
-                    {% endif %}
                 </div>
-            </div>
 
-            <div>
-                {% if st in ['waiting','booked'] %}
-                    <button disabled class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-gray-100 text-gray-400 cursor-not-allowed">Waiting</button>
-                {% elif st in ['in progress','in_progress','confirmed','ongoing'] %}
-                    <button disabled class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-gray-100 text-gray-500 cursor-not-allowed">Sedang Diperiksa</button>
-                {% elif st in ['done','completed'] %}
-                    <a href="{{ url_for('add_rekam', appointment_id=appt.appointment_id) }}" class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">Lihat Detail</a>
-                {% elif st == 'cancelled' %}
-                    <button disabled class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-gray-100 text-gray-400 cursor-not-allowed">—</button>
-                {% else %}
-                    <a href="{{ url_for('add_rekam', appointment_id=appt.appointment_id) }}" class="py-2 px-3 inline-flex items-center gap-x-1 text-xs font-medium rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700">+ Rekam Medis</a>
-                {% endif %}
-            </div>
+                <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-100 gap-2">
+                    <button type="submit" class="inline-flex w-full justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:w-auto transition-colors">
+                        Save
+                    </button>
+                    <button type="button" onclick="document.getElementById('modalJadwal').classList.add('hidden')" class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
 
         </div>
-        {% else %}
-        <div class="text-center text-sm text-gray-400 py-6">Belum ada appointment untuk hari ini.</div>
-        {% endfor %}
     </div>
 </div>
-                    </div>
-
-                </div> 
-                <div class="flex flex-col gap-6">
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-auto">
-                        <h3 class="font-bold text-lg text-gray-800 mb-2">Calendar</h3>
-
-                        <div id="calendar" class="w-full">
-                            <div class="flex items-center justify-between mb-3">
-                                <button id="prevBtn" class="text-sm px-2 py-1 rounded-md hover:bg-gray-100">❮</button>
-                                <div class="text-center">
-                                    <div id="monthYear" class="text-lg font-semibold text-gray-800"></div>
-                                </div>
-                                <button id="nextBtn" class="text-sm px-2 py-1 rounded-md hover:bg-gray-100">❯</button>
-                            </div>
-
-                            <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2">
-                                <div class="font-medium">Min</div>
-                                <div class="font-medium">Sen</div>
-                                <div class="font-medium">Sel</div>
-                                <div class="font-medium">Rab</div>
-                                <div class="font-medium">Kam</div>
-                                <div class="font-medium">Jum</div>
-                                <div class="font-medium">Sab</div>
-                            </div>
-
-                            <div id="daysGrid" class="grid grid-cols-7 gap-1"></div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-full">
-                        <h3 class="font-bold text-lg text-gray-800">Notifications</h3>
-                        <ul class="mt-4 space-y-3 text-sm text-gray-600">
-                            <li class="flex gap-2">
-                                <span class="text-blue-500">•</span> Rapat Dokter jam 13:00
-                            </li>
-                            <li class="flex gap-2">
-                                <span class="text-blue-500">•</span> Update stok obat masuk
-                            </li>
-                        </ul>
-                    </div>
-
-                </div>
-                </div>
-                
-    </main>
     <script>
         (function(){
             const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -247,7 +260,6 @@
                 const firstDay = new Date(year, month, 1).getDay();
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-                // Fill initial empty cells
                 for(let i = 0; i < firstDay; i++){
                     const empty = document.createElement('div');
                     empty.className = 'p-2 text-sm text-gray-300';
@@ -256,30 +268,38 @@
 
                 for(let d = 1; d <= daysInMonth; d++){
                     const cell = document.createElement('div');
-                    const isToday = (d === today.getDate() && month === today.getMonth() && year === today.getFullYear());
+                    const isToday = (
+                        d === today.getDate() &&
+                        month === today.getMonth() &&
+                        year === today.getFullYear()
+                    );
+
                     cell.className = 'p-2 text-sm flex items-center justify-center';
+
                     if(isToday){
-                        cell.innerHTML = `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white font-semibold">${d}</span>`;
+                        cell.innerHTML =
+                            `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white font-semibold">${d}</span>`;
                     } else {
-                        cell.innerHTML = `<span class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100">${d}</span>`;
+                        cell.innerHTML =
+                            `<span class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100">${d}</span>`;
                     }
+
                     daysGrid.appendChild(cell);
                 }
             }
 
-            prevBtn.addEventListener('click', function(){
-                currentMonth -= 1;
-                if(currentMonth < 0){ currentMonth = 11; currentYear -= 1; }
+            prevBtn.onclick = () => {
+                currentMonth--;
+                if(currentMonth < 0){ currentMonth = 11; currentYear--; }
                 renderCalendar(currentMonth, currentYear);
-            });
+            };
 
-            nextBtn.addEventListener('click', function(){
-                currentMonth += 1;
-                if(currentMonth > 11){ currentMonth = 0; currentYear += 1; }
+            nextBtn.onclick = () => {
+                currentMonth++;
+                if(currentMonth > 11){ currentMonth = 0; currentYear++; }
                 renderCalendar(currentMonth, currentYear);
-            });
+            };
 
-            // Initial render
             renderCalendar(currentMonth, currentYear);
         })();
     </script>
