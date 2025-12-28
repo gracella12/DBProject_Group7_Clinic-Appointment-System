@@ -79,6 +79,7 @@ def login():
                 session['email'] = pasien[1]
                 session['role'] = 'pasien'
                 session['id'] = pasien[0]
+                session['nama'] = pasien[3]
                 cur.close()
                 flash('Login successful!', 'success')
                 return redirect(url_for('home')) 
@@ -93,6 +94,7 @@ def login():
                 session['email'] = resepsionis[1]
                 session['role'] = 'resepsionis'
                 session['id'] = resepsionis[0]
+                session['nama'] = resepsionis[3]
                 cur.close()
                 flash('Welcome Resepsionis!', 'success')
                 return redirect(url_for('homepageResepsionis')) 
@@ -106,6 +108,7 @@ def login():
                 session['email'] = dokter[1]
                 session['role'] = 'dokter'
                 session['id'] = dokter[0]
+                session['nama'] = dokter[3]
                 cur.close()
                 flash('Welcome Doctor!', 'success')
                 return redirect(url_for('dokter_dashboard'))
@@ -399,46 +402,56 @@ def display_resepsionis():
     
 @app.route('/resepsionis/edit/<int:id>', methods=['GET', 'POST'])
 def edit_resepsionis(id):
+    # Cek login
     if 'email' not in session:
         return redirect(url_for('login'))
+
     cur = mysql.connection.cursor()
 
     if request.method == 'POST':
-       nama_depan = request.form['nama_depan']
-       nama_belakang = request.form['nama_belakang']
-       status = request.form['status']
-       telepon_list = request.form.getlist('telepon[]')
-       
-       try:
-           cur.execute(
-               "UPDATE Resepsionis SET nama_depan = %s, nama_belakang = %s, status = %s WHERE resepsionis_id = %s",
-                (nama_depan, nama_belakang, status, id)
-           )
+        nama_depan = request.form['nama_depan']
+        nama_belakang = request.form['nama_belakang']
+        status = request.form['status']
+        telepon_list = request.form.getlist('telepon[]')
 
-           cur.execute("DELETE FROM Resepsionis_telepon WHERE resepsionis_id = %s", (id,))
-           for telepon in telepon_list:
+        try:
+            # 1. Update Data Utama
+            cur.execute(
+                "UPDATE Resepsionis SET nama_depan = %s, nama_belakang = %s, status = %s WHERE resepsionis_id = %s",
+                (nama_depan, nama_belakang, status, id)
+            )
+
+            # 2. Update Telepon
+            cur.execute("DELETE FROM Resepsionis_telepon WHERE resepsionis_id = %s", (id,))
+            for telepon in telepon_list:
                 telepon = telepon.strip()
                 if telepon:
                     cur.execute("INSERT INTO Resepsionis_telepon (telepon, resepsionis_id) VALUES (%s, %s)",
-                               (telepon, id))
-            
-           mysql.connection.commit()
-           cur.close()
-           flash('The receptionist record is successfully updated!', 'success')
-           return redirect(url_for('display_resepsionis'))
-       
-       except Exception as e:
-            flash(f'Error: {str(e)}', 'error')
-            return redirect(url_for('edit_resepsionis', id=id)) 
+                                (telepon, id))
 
+            mysql.connection.commit()
+
+            if session.get('id') == id:
+                session['nama'] = nama_depan
+            
+            cur.close()
+            flash('The receptionist record is successfully updated!', 'success')
+            return redirect(url_for('display_resepsionis'))
+
+        except Exception as e:
+            mysql.connection.rollback()
+            flash(f'Error: {str(e)}', 'error')
+            return redirect(url_for('edit_resepsionis', id=id))
+
+    # Bagian GET (Tampilkan Form)
     cur.execute("SELECT nama_depan, nama_belakang, status FROM Resepsionis WHERE resepsionis_id = %s", (id,))
     resepsionis = cur.fetchone()
-    
+
     cur.execute("SELECT telepon FROM Resepsionis_telepon WHERE resepsionis_id = %s", (id,))
     telepon_resepsionis = cur.fetchall()
-    
+
     cur.close()
-    
+
     return render_template('editResepsionis.html', resepsionis=resepsionis, telepon_list=telepon_resepsionis, resepsionis_id=id)
 
 @app.route('/resepsionis/hapus/<int:id>')
