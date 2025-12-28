@@ -70,8 +70,9 @@ def login():
         
         cur = mysql.connection.cursor()
         
-        # --- 1. Pengecekan Pasien (HASH) ---
-        cur.execute('SELECT pasien_id, email, password FROM Pasien WHERE email = %s', (email,))
+        # --- 1. Pengecekan Pasien ---
+        # PERBAIKAN: Menggunakan 'nama_depan', BUKAN 'nama'
+        cur.execute('SELECT pasien_id, email, password, nama_depan FROM Pasien WHERE email = %s', (email,))
         pasien = cur.fetchone()
         
         if pasien:
@@ -79,28 +80,29 @@ def login():
                 session['email'] = pasien[1]
                 session['role'] = 'pasien'
                 session['id'] = pasien[0]
-                session['nama'] = pasien[3]
+                session['nama'] = pasien[3] # Ambil nama_depan
                 cur.close()
                 flash('Login successful!', 'success')
                 return redirect(url_for('home')) 
         
-        # --- 2. Pengecekan Resepsionis (UBAH JADI HASH DISINI) ---
-        cur.execute('SELECT resepsionis_id, email, password FROM Resepsionis WHERE email = %s', (email,))
+        # --- 2. Pengecekan Resepsionis ---
+        # PERBAIKAN: Menggunakan 'nama_depan'
+        cur.execute('SELECT resepsionis_id, email, password, nama_depan FROM Resepsionis WHERE email = %s', (email,))
         resepsionis = cur.fetchone()
         
         if resepsionis:
-            # PERBAIKAN: Ganti == pwd dengan check_password_hash
             if check_password_hash(resepsionis[2], pwd):
                 session['email'] = resepsionis[1]
                 session['role'] = 'resepsionis'
                 session['id'] = resepsionis[0]
-                session['nama'] = resepsionis[3]
+                session['nama'] = resepsionis[3] # Ambil nama_depan
                 cur.close()
                 flash('Welcome Resepsionis!', 'success')
                 return redirect(url_for('homepageResepsionis')) 
 
-        # --- 3. Pengecekan Dokter (Masih Plaintext - Biarkan dulu kalau Dokter belum di-fix) ---
-        cur.execute('SELECT dokter_id, email, password FROM Dokter WHERE email = %s', (email,))
+        # --- 3. Pengecekan Dokter ---
+        # PERBAIKAN: Menggunakan 'nama_depan', BUKAN 'nama'
+        cur.execute('SELECT dokter_id, email, password, nama_depan FROM Dokter WHERE email = %s', (email,))
         dokter = cur.fetchone()
         
         if dokter:
@@ -108,7 +110,7 @@ def login():
                 session['email'] = dokter[1]
                 session['role'] = 'dokter'
                 session['id'] = dokter[0]
-                session['nama'] = dokter[3]
+                session['nama'] = dokter[3] # Ambil nama_depan
                 cur.close()
                 flash('Welcome Doctor!', 'success')
                 return redirect(url_for('dokter_dashboard'))
@@ -795,7 +797,11 @@ def homepageResepsionis():
         JOIN Dijadwalkan dj ON d.dokter_id = dj.dokter_id
         JOIN Jadwal_dokter j ON dj.jadwal_id = j.jadwal_id
         WHERE j.hari = %s
+        AND j.jadwal_id NOT IN (
+            SELECT jadwal_id FROM Appointment WHERE tanggal = CURDATE()
+        )
     """
+    
     cur.execute(query_active_docs, (hari_ini,))
     active_doctors = cur.fetchone()[0]
     # ===================================================================
@@ -934,6 +940,7 @@ def receptionist_book_appointment():
     # 2. Ambil List Jadwal Dokter YANG TERSEDIA (Available)
     # Kita filter menggunakan 'NOT IN'
     # Artinya: Ambil jadwal yang ID-nya TIDAK ADA di tabel Appointment dengan tanggal hari ini
+    # 2. Ambil List Jadwal Dokter YANG TERSEDIA (Available)
     cur.execute("""
         SELECT j.jadwal_id, d.nama_depan, d.nama_belakang, j.hari, j.jam_mulai, j.jam_selesai
         FROM Jadwal_dokter j
@@ -942,7 +949,7 @@ def receptionist_book_appointment():
         WHERE j.jadwal_id NOT IN (
             SELECT jadwal_id FROM Appointment WHERE tanggal = CURDATE()
         )
-        ORDER BY j.hari, j.jam_mulai
+        ORDER BY FIELD(j.hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'), j.jam_mulai
     """)
     schedules = cur.fetchall()
     cur.close()
