@@ -3,6 +3,8 @@
 # 🏥 Clinic Appointment System
 **Sistem Informasi Manajemen Janji Temu Klinik Terintegrasi**
 
+[![Vercel](https://img.shields.io/badge/Vercel-Visit%20Live%20Site-black?style=for-the-badge&logo=vercel&logoColor=white)](https://proyekbasisdata-koma2025-d8ad.vercel.app)
+
 <p align="center">
   <a href="#gambaran-umum">Gambaran Umum</a> •
   <a href="#fitur-utama">Fitur Utama</a> •
@@ -86,15 +88,16 @@ Proyek ini menggunakan basis data relasional **MySQL** yang telah dinormalisasi 
 ### 1. Clone Repository
 ```bash
 git clone [https://github.com/gracella12/DBProject_Group7_Clinic-Appointment-System.git](https://github.com/gracella12/DBProject_Group7_Clinic-Appointment-System.git)
-cd Clinic-Appointment-System/week4_integration
+cd DBProject_Group7_Clinic-Appointment-System/week4_integration
 ```
 
 ### 2. Setup Virtual Environment 
 ```bash
-python -m venv venv
 # Windows
+python -m venv venv
 venv\Scripts\activate
 # Mac/Linux
+python -m venv venv
 source venv/bin/activate
 ```
 
@@ -102,19 +105,28 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+
 ### 4. Konfigurasi Database
 ```bash
-Buka file `app.py`, cari bagian konfigurasi app.config, dan sesuaikan dengan kredensial MySQL lokal Anda:
-```python
-# app.py
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'masukkan_password_anda' 
-app.config['MYSQL_DB'] = 'clinic_system'
+Aplikasi ini menggunakan *Environment Variables* untuk keamanan.
+
+1. Buat file baru bernama `.env` di dalam folder `week4_integration`.
+2. Salin konfigurasi berikut ke dalam file `.env` tersebut:
+3. Sesuaikan `MYSQL_PASSWORD` dengan password database lokal Anda.
+
+```text
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=masukkan_password_anda
+MYSQL_DB=clinic_system
+MYSQL_PORT=3306
 ```
 
 ### 5. Jalankan Aplikasi
 ```bash
+#Mac/Linux
+python3 app.py
+#Windows
 python app.py
 ```
 ---
