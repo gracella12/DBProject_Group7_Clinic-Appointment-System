@@ -4,13 +4,13 @@
 **Sistem Informasi Manajemen Janji Temu Klinik Terintegrasi**
 
 <p align="center">
-  <a href="#-gambaran-umum">Gambaran Umum</a> •
-  <a href="#-fitur-unggulan">Fitur Utama</a> •
-  <a href="#-desain-basis-data">Desain</a> •
-  <a href="#-teknologi">Teknologi</a> •
-  <a href="#-cara-menjalankan">Instalasi</a> •
-  <a href="#-struktur-direktori">Struktur Folder</a> •
-  <a href="#-tampilan-aplikasi">Galeri</a>
+  <a href="#gambaran-umum">Gambaran Umum</a> •
+  <a href="#fitur-utama">Fitur Utama</a> •
+  <a href="#desain-basis-data">Desain</a> •
+  <a href="#teknologi">Teknologi</a> •
+  <a href="#cara-menjalankan">Instalasi</a> •
+  <a href="#struktur-direktori">Struktur Folder</a> •
+  <a href="#tampilan-aplikasi">Galeri</a>
 </p>
 
 </div>
@@ -40,7 +40,7 @@ Departemen Ilmu Komputer dan Elektronika, FMIPA UGM - Semester Gasal 2025
 Sistem manual menyebabkan antrean panjang, kesulitan pengelolaan jadwal dokter, dan risiko kehilangan data rekam medis pasien.
 
 **Solusi yang Ditawarkan:**
-Aplikasi ini menyediakan *Role-Based Access Control* (RBAC) untuk tiga aktor utama:
+Aplikasi ini menyediakan *Role-Based Access Control* (RBAC) untuk tiga entitas utama:
 1.  **Pasien:** Dapat melakukan *booking* mandiri dan melihat riwayat medis.
 2.  **Dokter:** Manajemen jadwal praktik dan input diagnosis pasien.
 3.  **Resepsionis:** Menangani pendaftaran *walk-in* dan manajemen operasional klinik.
@@ -68,7 +68,7 @@ Proyek ini menggunakan basis data relasional **MySQL** yang telah dinormalisasi 
 
 * **ON DELETE CASCADE:** Diterapkan pada relasi `Dokter` dan `Appointment`. Jika data dokter dihapus, jadwal appointment terkait akan otomatis terhapus untuk mencegah *ghost schedule*.
 * **ON DELETE SET NULL:** Diterapkan pada relasi `Resepsionis` dan `Appointment`. Jika akun resepsionis dihapus, riwayat transaksi medis pasien tetap aman (tidak hilang), hanya kolom penanggung jawab yang menjadi NULL.
-* [cite_start]**Secure Hashing:** Password pengguna disimpan dalam format terenkripsi menggunakan `pbkdf2:sha256` (Werkzeug Security).
+* **Secure Hashing:** Password pengguna disimpan dalam format terenkripsi menggunakan `pbkdf2:sha256` (Werkzeug Security).
 
 ---
 
