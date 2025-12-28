@@ -82,6 +82,9 @@ Proyek ini menggunakan basis data relasional **MySQL** yang telah dinormalisasi 
 ---
 
 ## <a id="cara-menjalankan"></a>⚙️ Cara Menjalankan
+### Link Deploy
+Anda bisa mengakses projek ini pada link berikut: `https://proyekbasisdata-koma2025-d8ad.vercel.app`.
+Jika anda ingin install projek ini, maka ikutilah langkah di bawah.
 
 ### 1. Clone Repository
 ```bash
