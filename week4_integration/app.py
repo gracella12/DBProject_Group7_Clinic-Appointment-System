@@ -1368,8 +1368,6 @@ def dokter_pasien_detail(id_pasien, id_appt):
         'status': appointment_data['status'],
         'tgl_periksa': appointment_data['tanggal_cantik'],
         'waktu': appointment_data['waktu_cantik'],
-
-        # 👉 Ambil dari DB, kalau None baru pakai default
         'diagnosis': appointment_data['diagnosis'] or 'Belum Diperiksa',
         'deskripsi': appointment_data['description'] or 'Silakan input rekam medis baru.'
     }
