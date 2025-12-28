@@ -5,8 +5,8 @@
 
 <p align="center">
   <a href="#-gambaran-umum">Gambaran Umum</a> •
-  <a href="#-fitur-unggulan">Fitur Unggulan</a> •
-  <a href="#-desain-basis-data">Basis Data</a> •
+  <a href="#-fitur-unggulan">Fitur Utama</a> •
+  <a href="#-desain-basis-data">Desain</a> •
   <a href="#-teknologi">Teknologi</a> •
   <a href="#-cara-menjalankan">Instalasi</a> •
   <a href="#-struktur-direktori">Struktur Folder</a> •
@@ -37,9 +37,9 @@ Departemen Ilmu Komputer dan Elektronika, FMIPA UGM - Semester Gasal 2025
 **Clinic Appointment System (MAYO Clinic)** adalah aplikasi berbasis web yang dirancang untuk mengatasi inefisiensi pendaftaran manual di klinik. Sistem ini mengintegrasikan proses pendaftaran pasien, penjadwalan dokter, dan pencatatan rekam medis ke dalam satu *database* terpusat.
 
 **Masalah Utama:**
-[cite_start]Sistem manual menyebabkan antrean panjang, kesulitan pengelolaan jadwal dokter, dan risiko kehilangan data rekam medis pasien[cite: 21, 22].
+Sistem manual menyebabkan antrean panjang, kesulitan pengelolaan jadwal dokter, dan risiko kehilangan data rekam medis pasien.
 
-**Solusi Kami:**
+**Solusi yang Ditawarkan:**
 Aplikasi ini menyediakan *Role-Based Access Control* (RBAC) untuk tiga aktor utama:
 1.  **Pasien:** Dapat melakukan *booking* mandiri dan melihat riwayat medis.
 2.  **Dokter:** Manajemen jadwal praktik dan input diagnosis pasien.
@@ -47,9 +47,9 @@ Aplikasi ini menyediakan *Role-Based Access Control* (RBAC) untuk tiga aktor uta
 
 ---
 
-## 🚀 Fitur Unggulan
+## 🚀 Fitur Utama
 
-Sistem ini memiliki alur kerja yang komprehensif untuk setiap pengguna:
+Sistem ini memiliki alur kerja yang komprehensif untuk setiap pengguna, yakni sebagai berikut.
 
 | Peran | Fitur Utama |
 | :--- | :--- |
@@ -61,14 +61,14 @@ Sistem ini memiliki alur kerja yang komprehensif untuk setiap pengguna:
 
 ## 🗄️ Desain Basis Data
 
-[cite_start]Proyek ini menggunakan basis data relasional **MySQL** yang telah melalui proses normalisasi hingga **3NF** untuk menjamin integritas data[cite: 221].
+Proyek ini menggunakan basis data relasional **MySQL** yang telah dinormalisasi hingga **3NF** untuk menjamin integritas data.
 
-### 🔑 Skema & Constraints Penting
-Kami menerapkan *Constraints* SQL untuk menjaga konsistensi logika bisnis:
+### 🔑 Constraints 
+*Constraints* SQL diterapkan untuk menjaga konsistensi logika, yakni
 
-* **ON DELETE CASCADE:** Diterapkan pada relasi `Dokter` dan `Appointment`. [cite_start]Jika data dokter dihapus, jadwal appointment terkait akan otomatis terhapus untuk mencegah *ghost schedule*[cite: 299].
-* **ON DELETE SET NULL:** Diterapkan pada relasi `Resepsionis` dan `Appointment`. [cite_start]Jika akun resepsionis dihapus, riwayat transaksi medis pasien tetap aman (tidak hilang), hanya kolom penanggung jawab yang menjadi NULL[cite: 299].
-* [cite_start]**Secure Hashing:** Password pengguna disimpan dalam format terenkripsi menggunakan `pbkdf2:sha256` (Werkzeug Security)[cite: 426].
+* **ON DELETE CASCADE:** Diterapkan pada relasi `Dokter` dan `Appointment`. Jika data dokter dihapus, jadwal appointment terkait akan otomatis terhapus untuk mencegah *ghost schedule*.
+* **ON DELETE SET NULL:** Diterapkan pada relasi `Resepsionis` dan `Appointment`. Jika akun resepsionis dihapus, riwayat transaksi medis pasien tetap aman (tidak hilang), hanya kolom penanggung jawab yang menjadi NULL.
+* [cite_start]**Secure Hashing:** Password pengguna disimpan dalam format terenkripsi menggunakan `pbkdf2:sha256` (Werkzeug Security).
 
 ---
 
@@ -86,7 +86,7 @@ Kami menerapkan *Constraints* SQL untuk menjaga konsistensi logika bisnis:
 ### 1. Clone Repository
 ```bash
 git clone [https://github.com/gracella12/DBProject_Group7_Clinic-Appointment-System.git](https://github.com/gracella12/DBProject_Group7_Clinic-Appointment-System.git)
-cd Clinic-Appointment-System
+cd Clinic-Appointment-System/week4_integration
 ```
 
 ### 2. Setup Virtual Environment 
@@ -102,8 +102,18 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+### 4. Konfigurasi Database
+```bash
+Buka file `app.py`, cari bagian konfigurasi app.config, dan sesuaikan dengan kredensial MySQL lokal Anda:
+```python
+# app.py
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'masukkan_password_anda' 
+app.config['MYSQL_DB'] = 'clinic_system'
+```
 
-### 4. Jalankan Aplikasi
+### 5. Jalankan Aplikasi
 ```bash
 python app.py
 ```
@@ -113,27 +123,31 @@ python app.py
 Berikut adalah susunan folder dalam repositori ini.
 ```text
 DBProject_Group7_Clinic-Appointment-System/
-├── week1_proposal_ERD/      # Tahap 1: Desain Awal & ERD
+├── week1_proposal_ERD/              # Tahap 1: Desain Awal & ERD
 │   ├── ER Diagram [REVISED].png
-│   └── Proposal_ERD_Group 7.pdf
+│   └── Proposal_ERD_Group 7 [REVISED].pdf
 │
-├── week2_schema_sql/        # Tahap 2: Skema Database & Normalisasi
-│   ├── clinic_system.sql    # File SQL Awal
-│   └── logical_schema.png
+├── week2_schema_sql/                # Tahap 2: Skema Database & Normalisasi
+│   ├── clinic_system.sql
+│   ├── logical_schema.png
+│   └── normalization_explained.pdf  # Penjelasan Normalisasi (1NF-3NF)
 │
-├── week3_CRUD_demo/         # Tahap 3: Prototipe Fungsi CRUD Dasar
+├── week3_CRUD_demo/                 # Tahap 3: Prototipe Fungsi CRUD Dasar
+│   ├── templates/
+│   ├── app.py
+│   └── crud_explained.pdf           # Penjelasan Logika Create, Read, Update, Delete
 │
-├── week4_integration/       # ⭐️ APLIKASI UTAMA (Final Integration)
-│   ├── static/              # Aset (CSS/JS/Images)
-│   ├── templates/           # File HTML Frontend
-│   ├── venv/                # Virtual Environment
-│   ├── app.py               # Main Application Logic
-│   ├── requirements.txt     # Daftar Library Python
-│   ├── tailwind.config.js   # Konfigurasi Tailwind CSS
+├── week4_integration/               # ⭐️ APLIKASI UTAMA (Final Integration)
+│   ├── static/                      # Aset (CSS/JS/Images)
+│   ├── templates/                   # File HTML Frontend
+│   ├── venv/                        # Virtual Environment
+│   ├── app.py                       # Main Application Logic
+│   ├── requirements.txt             # Daftar Library Python
+│   ├── tailwind.config.js           # Konfigurasi Tailwind CSS
 │   └── ...
 │
-├── DBProject-2.sql          # Dump Database Final
-└── README.md                # Dokumentasi Proyek
+├── DBProject-2.sql                  # Dump Database Final
+└── README.md                        # Dokumentasi Proyek
 ```
 ---
 
