@@ -778,8 +778,6 @@ def display_rekam():
     return render_template('displayRekam.html', rekam_list=data)
 
 @app.route('/receptionist-dashboard')
-@app.route('/receptionist-dashboard')
-@app.route('/receptionist-dashboard')
 def homepageResepsionis():
     # Cek keamanan: hanya role resepsionis yang boleh masuk
     if 'email' not in session or session.get('role') != 'resepsionis':
@@ -1246,29 +1244,31 @@ def dokter_appointment_list():
 
     appointments_list = []
 
-    # Waktu sekarang
     now = datetime.now().time()
     today_str = date.today().strftime("%Y-%m-%d")
 
     for row in raw_appointments:
-        waktu_db = row[1]   # bisa time atau string
+        waktu_db = row[1]   # bisa datetime.time atau string
 
-        # Konversi ke time object
+        # 🔹 Konversi waktu DB ke time object
         if hasattr(waktu_db, "strftime"):
             waktu_apt = waktu_db
             jam_janji = waktu_db.strftime("%H:%M")
         else:
-            waktu_apt = datetime.strptime(str(waktu_db), "%H:%M").time()
-            jam_janji = str(waktu_db)[:5]
+            waktu_str = str(waktu_db)
+            if len(waktu_str) == 5:  # HH:MM
+                waktu_apt = datetime.strptime(waktu_str, "%H:%M").time()
+            else:                   # HH:MM:SS
+                waktu_apt = datetime.strptime(waktu_str, "%H:%M:%S").time()
+            jam_janji = waktu_str[:5]
 
         status_db = row[4]
-
         status_final = status_db
 
         if tanggal_pilih == today_str and status_db != 'done':
             if now < waktu_apt:
                 status_final = 'waiting'
-            elif now >= waktu_apt:
+            else:
                 status_final = 'ongoing'
 
         appointments_list.append({
@@ -1297,6 +1297,7 @@ def dokter_appointment_list():
 #     return render_template('dokterRekamMedis.html')
 
 @app.route('/dokter/pasien/detail/<int:id_pasien>/<int:id_appt>')
+@app.route('/dokter/pasien/<int:id_pasien>/appointment/<int:id_appt>')
 def dokter_pasien_detail(id_pasien, id_appt):
     # 1. Cek Login
     if 'email' not in session or session.get('role') != 'dokter':
@@ -1304,15 +1305,13 @@ def dokter_pasien_detail(id_pasien, id_appt):
 
     cur = mysql.connection.cursor(DictCursor)
 
-    # --- A. QUERY DATA PASIEN (Profil) ---
+    # --- A. DATA PASIEN ---
     query_pasien = """
         SELECT 
             p.pasien_id,
             CONCAT(p.nama_depan, ' ', p.nama_belakang) AS nama_lengkap,
             p.gender,
             TIMESTAMPDIFF(YEAR, p.tanggal_lahir, CURDATE()) AS umur,
-            p.Jalan,
-            p.Kota,
             pt.telepon
         FROM Pasien p
         LEFT JOIN Pasien_telepon pt ON p.pasien_id = pt.pasien_id
@@ -1321,26 +1320,29 @@ def dokter_pasien_detail(id_pasien, id_appt):
     cur.execute(query_pasien, (id_pasien,))
     pasien_data = cur.fetchone()
 
-    # --- B. QUERY DETAIL APPOINTMENT ---
-    # SAYA UBAH QUERY-NYA: Tambahkan DATE_FORMAT agar key 'tanggal_cantik' tersedia
+    # --- B. DATA APPOINTMENT + REKAM MEDIS ---
     query_appt = """
         SELECT 
-            appointment_id,
-            tanggal as tanggal_cantik,  -- Biar key dictionary jalan
-            waktu as waktu_cantik,        -- Biar key dictionary jalan
-            status
-        FROM Appointment
-        WHERE appointment_id = %s
+            a.appointment_id,
+            a.tanggal AS tanggal_cantik,
+            a.waktu AS waktu_cantik,
+            a.status,
+            r.diagnosis,
+            r.description
+        FROM Appointment a
+        LEFT JOIN Rekam_medis r 
+            ON a.appointment_id = r.appointment_id
+        WHERE a.appointment_id = %s AND a.pasien_id = %s
     """
-    cur.execute(query_appt, (id_appt,))
+    cur.execute(query_appt, (id_appt, id_pasien))
     appointment_data = cur.fetchone()
 
-    # --- C. QUERY RIWAYAT ---
+    # --- C. RIWAYAT ---
     query_history = """
         SELECT 
             r.diagnosis, 
             r.description, 
-            a.tanggal as tanggal,
+            a.tanggal AS tanggal,
             CONCAT(d.nama_depan, ' ', d.nama_belakang) AS nama_dokter
         FROM Rekam_medis r
         JOIN Appointment a ON r.appointment_id = a.appointment_id
@@ -1353,44 +1355,49 @@ def dokter_pasien_detail(id_pasien, id_appt):
 
     cur.close()
 
-    if not pasien_data:
-        return "Data Pasien tidak ditemukan."
+    if not pasien_data or not appointment_data:
+        return "Data tidak ditemukan."
 
-    # --- D. PERBAIKAN DICTIONARY ---
-    # Perhatikan: Saya ganti 'pasien' jadi 'pasien_data' dan 'appt' jadi 'appointment_data'
+    # --- D. BUNGKUS DATA ---
     detail_data = {
-        'nama': pasien_data['nama_lengkap'],        
-        'gender': pasien_data['gender'],            
-        'umur': pasien_data['umur'], 
-        'telepon': pasien_data.get('telepon', '-'), # Tambahan biar lengkap
-        
-        'status': appointment_data['status'],             
-        'tgl_periksa': appointment_data['tanggal_cantik'], # Key ini sekarang ada karena query B diubah
-        'waktu': appointment_data['waktu_cantik'],         
-        
-        'diagnosis': 'Belum Diperiksa',       
-        'deskripsi': 'Silakan input rekam medis baru.' 
+        'nama': pasien_data['nama_lengkap'],
+        'gender': pasien_data['gender'],
+        'umur': pasien_data['umur'],
+        'telepon': pasien_data.get('telepon') or '-',
+
+        'status': appointment_data['status'],
+        'tgl_periksa': appointment_data['tanggal_cantik'],
+        'waktu': appointment_data['waktu_cantik'],
+
+        # 👉 Ambil dari DB, kalau None baru pakai default
+        'diagnosis': appointment_data['diagnosis'] or 'Belum Diperiksa',
+        'deskripsi': appointment_data['description'] or 'Silakan input rekam medis baru.'
     }
-    
-    return render_template('dokterPasienDetail.html', 
-                           detail=detail_data,
-                           riwayat=riwayat_medis, 
-                           id_pasien=id_pasien,
-                           id_appt=id_appt)
+
+    return render_template(
+        'dokterPasienDetail.html',
+        detail=detail_data,
+        riwayat=riwayat_medis,
+        id_pasien=id_pasien,
+        id_appt=id_appt
+    )
 
 ##############################################################
 @app.route('/dokter/input_rekam_medis/<int:id>', methods=['GET', 'POST'])
 def dokter_input_rekam_medis(id):
-    
+
     # 1. Cek Login
     if 'id' not in session:
         return redirect(url_for('login'))
-    
+
     cur = mysql.connection.cursor()
+
     query = """
         SELECT 
             a.appointment_id,
             a.tanggal,
+            a.waktu,
+            a.status,
             p.nama_depan, 
             p.nama_belakang,
             p.gender,
@@ -1403,64 +1410,83 @@ def dokter_input_rekam_medis(id):
     cur.execute(query, (id,))
     data = cur.fetchone()
 
-    # Validasi jika data tidak ada
     if not data:
         cur.close()
         flash('Data appointment tidak ditemukan.', 'error')
         return redirect(url_for('dokter_appointment_list'))
 
-    # Hitung Umur
-    tgl_lahir = data[5]
+    appt_id   = data[0]
+    tgl_appt  = data[1]
+    waktu_db  = data[2]
+    status_db = data[3]
+
+    now_time = datetime.now().time()
+    today = date.today()
+
+    # pastikan waktu jadi time object
+    if hasattr(waktu_db, "hour"):
+        waktu_apt = waktu_db
+    else:
+        waktu_apt = datetime.strptime(str(waktu_db), "%H:%M").time()
+
+    if tgl_appt == today and status_db == 'waiting' and now_time >= waktu_apt:
+        cur.execute("""
+            UPDATE Appointment 
+            SET status = 'ongoing'
+            WHERE appointment_id = %s
+        """, (id,))
+        mysql.connection.commit()
+        status_db = 'ongoing'
+
+    # ===============================
+    # Hitung umur
+    # ===============================
+    tgl_lahir = data[7]
     umur = (date.today() - tgl_lahir).days // 365 if tgl_lahir else 0
 
-    # Bungkus data ke dalam Dictionary
     pasien_data = {
-        'id': data[0],              # appointment_id
-        'tanggal': data[1],
-        'nama_pasien': f"{data[2]} {data[3]}", 
-        'gender': data[4],
+        'id': appt_id,
+        'tanggal': tgl_appt,
+        'nama_pasien': f"{data[4]} {data[5]}",
+        'gender': data[6],
         'umur': umur,
-        'pasien_id': data[6]
+        'pasien_id': data[8],
+        'status': status_db
     }
 
-    # --- LANGKAH 2: LOGIKA SIMPAN (POST) ---
     if request.method == 'POST':
         diagnosis = request.form['diagnosis']
         description = request.form['description']
-        
+
         try:
-            # Insert ke Rekam Medis
+            # Insert Rekam Medis
             cur.execute("""
                 INSERT INTO Rekam_medis (diagnosis, description, appointment_id)
                 VALUES (%s, %s, %s)
             """, (diagnosis, description, id))
-            
-            # Update Status Appointment
+
             cur.execute("""
                 UPDATE Appointment 
-                SET status = 'Selesai' 
+                SET status = 'done'
                 WHERE appointment_id = %s
             """, (id,))
-            
+
             mysql.connection.commit()
             cur.close()
-            
-            flash('Rekam medis berhasil disimpan!', 'success')
+
+            flash('Rekam medis berhasil disimpan! Status menjadi selesai.', 'success')
             return redirect(url_for('dokter_appointment_list'))
-            
+
         except Exception as e:
             mysql.connection.rollback()
             flash(f'Gagal menyimpan: {str(e)}', 'error')
-            # Jika error, kode lanjut ke bawah (render_template)
-            # Inputan dokter tidak hilang karena halaman tidak direfresh total
 
-    # --- LANGKAH 3: RENDER TEMPLATE ---
     cur.close()
-    
-    # Pastikan nama file HTML sesuai dengan yang Anda buat
-    return render_template('dokterInputRekamMedis.html', 
-                           pasien=pasien_data, 
-                           tanggal_skrg=date.today().strftime('%d %B %Y')
+
+    return render_template(
+        'dokterInputRekamMedis.html',
+        pasien=pasien_data,
+        tanggal_skrg=date.today().strftime('%d %B %Y')
     )
 
 ###############################################################################
