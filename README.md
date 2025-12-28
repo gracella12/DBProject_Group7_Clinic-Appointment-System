@@ -32,7 +32,7 @@ Departemen Ilmu Komputer dan Elektronika, FMIPA UGM - Semester Gasal 2025
 
 ---
 
-## 📋 Gambaran Umum
+## <a id="gambaran-umum"></a>📋 Gambaran Umum
 
 **Clinic Appointment System (MAYO Clinic)** adalah aplikasi berbasis web yang dirancang untuk mengatasi inefisiensi pendaftaran manual di klinik. Sistem ini mengintegrasikan proses pendaftaran pasien, penjadwalan dokter, dan pencatatan rekam medis ke dalam satu *database* terpusat.
 
@@ -47,7 +47,7 @@ Aplikasi ini menyediakan *Role-Based Access Control* (RBAC) untuk tiga entitas u
 
 ---
 
-## 🚀 Fitur Utama
+## <a id="fitur-utama"></a>🚀 Fitur Utama
 
 Sistem ini memiliki alur kerja yang komprehensif untuk setiap pengguna, yakni sebagai berikut.
 
@@ -59,7 +59,7 @@ Sistem ini memiliki alur kerja yang komprehensif untuk setiap pengguna, yakni se
 
 ---
 
-## 🗄️ Desain Basis Data
+## <a id="desain-basis-data"></a>🗄️ Desain Basis Data
 
 Proyek ini menggunakan basis data relasional **MySQL** yang telah dinormalisasi hingga **3NF** untuk menjamin integritas data.
 
@@ -72,7 +72,7 @@ Proyek ini menggunakan basis data relasional **MySQL** yang telah dinormalisasi 
 
 ---
 
-## 💻 Teknologi
+## <a id="teknologi"></a>💻 Teknologi
 
 * **Backend:** Python (Flask Framework)
 * **Database:** MySQL (Deployed on Railway)
@@ -81,7 +81,7 @@ Proyek ini menggunakan basis data relasional **MySQL** yang telah dinormalisasi 
 
 ---
 
-## ⚙️ Cara Menjalankan
+## <a id="cara-menjalankan"></a>⚙️ Cara Menjalankan
 
 ### 1. Clone Repository
 ```bash
@@ -119,7 +119,7 @@ python app.py
 ```
 ---
 
-## 📂 Struktur Direktori 
+## <a id="struktur-direktori"></a>📂 Struktur Direktori
 Berikut adalah susunan folder dalam repositori ini.
 ```text
 DBProject_Group7_Clinic-Appointment-System/
@@ -151,7 +151,7 @@ DBProject_Group7_Clinic-Appointment-System/
 ```
 ---
 
-## 📸 Tampilan Aplikasi
+## <a id="tampilan-aplikasi"></a>📸 Tampilan Aplikasi
 Berikut adalah cuplikan antarmuka dari MAYO Clinic System:
 
 | **Halaman Login** | **Homepage Pasien** |
