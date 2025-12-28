@@ -160,6 +160,9 @@ DBProject_Group7_Clinic-Appointment-System/
 │   ├── tailwind.config.js           # Konfigurasi Tailwind CSS
 │   └── ...
 │
+├── week5_final_report/              # Tahap 5: Laporan Akhir Proyek
+│   └── Final_Report_Group7.pdf      # Dokumen Laporan Lengkap
+│
 ├── DBProject-2.sql                  # Dump Database Final
 └── README.md                        # Dokumentasi Proyek
 ```
