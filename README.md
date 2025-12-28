@@ -117,11 +117,11 @@ Aplikasi ini menggunakan *Environment Variables* untuk keamanan.
 3. Sesuaikan `MYSQL_PASSWORD` dengan password database lokal Anda.
 
 ```bash 
-MYSQL_HOST=localhost
+MYSQL_HOST=hopper.proxy.rlwy.net
 MYSQL_USER=root
-MYSQL_PASSWORD=masukkan_password_anda
-MYSQL_DB=clinic_system
-MYSQL_PORT=3306
+MYSQL_PASSWORD=FkprQHTlAIIMxRrArWiPcYhGmQoKJulU
+MYSQL_DB=railway
+MYSQL_PORT=15945
 ```
 
 ### 5. Jalankan Aplikasi
