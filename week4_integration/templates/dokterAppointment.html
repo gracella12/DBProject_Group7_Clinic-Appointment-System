@@ -68,13 +68,16 @@
                 </div>
 
                 <div class="md:col-span-3">
-                    <label class="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-1">Filter Status</label>
+                    <label class="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-1">
+                        Filter Status
+                    </label>
                     <select id="filterStatus" onchange="filterTable()" 
-                        class="block w-full rounded-lg border-navy-400 text-navy-900 focus:ring-navy-800 focus:border-navy-800 p-2.5 border bg-white">
+                        class="block w-full rounded-lg border-navy-400 text-navy-900 
+                            focus:ring-navy-800 focus:border-navy-800 p-2.5 border bg-white">
                         <option value="all">All Status</option>
-                        <option value="Terjadwal">Scheduled</option>
-                        <option value="On Going">In Progress</option>
-                        <option value="Selesai">Done</option>
+                        <option value="waiting">Terjadwal</option>
+                        <option value="ongoing">On Going</option>
+                        <option value="done">Selesai</option>
                     </select>
                 </div>
             </div>
@@ -160,7 +163,7 @@
                                     </button>
 
                                 {% elif apt.status == 'ongoing' %}
-                                    <a href="{{ url_for('input_rekam_medis', id=apt.id) }}"
+                                    <a href="{{ url_for('dokter_input_rekam_medis', id=apt.id) }}"
                                     class="w-full inline-flex justify-center items-center px-4 py-2 rounded-lg 
                                             shadow-md text-xs font-bold text-white bg-navy-800 
                                             hover:bg-navy-900 transition-all">
