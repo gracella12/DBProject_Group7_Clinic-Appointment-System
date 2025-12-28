@@ -22,12 +22,6 @@
                 <button class="btn btn-primary px-4 py-2 rounded-xl bg-[#2F80ED] text-white font-semibold hover:bg-[#2563eb] transition-colors" type="submit">
                     Search
                 </button>
-                
-                {% if search_query %}
-                    <a href="{{ url_for('appointment_history') }}" class="btn btn-secondary px-4 py-2 rounded-xl bg-gray-700 text-white font-semibold hover:bg-gray-600 transition-colors">
-                        Reset
-                    </a>
-                {% endif %}
             </div>
         </form>
  {% if appointments %}

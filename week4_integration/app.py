@@ -673,7 +673,7 @@ def book_appointment_form():
 
 
 # ---------------------------------------------------
-# 2. ROUTE DELETE APPOINTMENT (FIXED)
+# 2. ROUTE DELETE APPOINTMENT 
 # ---------------------------------------------------
 @app.route('/appointment/delete/<int:id>')
 def delete_appointment(id):
