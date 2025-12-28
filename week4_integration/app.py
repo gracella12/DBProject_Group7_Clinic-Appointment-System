@@ -79,13 +79,9 @@ def login():
             if check_password_hash(pasien[2], pwd):
                 session['email'] = pasien[1]
                 session['role'] = 'pasien'
-<<<<<<< HEAD
                 session['pasien_id'] = pasien[0] 
+                session['nama'] = pasien[3]
 
-=======
-                session['id'] = pasien[0]
-                session['nama'] = pasien[3] # Ambil nama_depan
->>>>>>> dc5e6f44016e26f6d5b55706d1cf16e51242ed07
                 cur.close()
                 flash('Login successful!', 'success')
                 return redirect(url_for('home')) 
@@ -496,6 +492,14 @@ def all_schedules():
     """)
     jadwal_list = cur.fetchall()
     cur.close()
+
+    day_order = {
+    'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
+    'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7
+    }
+
+    # sort berdasarkan urutan hari
+    jadwal_list.sort(key=lambda x: day_order.get(x['hari'], 99))
 
     return render_template('allDokterSch.html', jadwal_list=jadwal_list)
 
