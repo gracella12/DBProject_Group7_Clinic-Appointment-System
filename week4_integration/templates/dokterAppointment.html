@@ -125,41 +125,55 @@
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                
-                                {% if apt.status == 'Selesai' %}
-                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-green-500 text-white border border-green-600 shadow-sm">
+                                {% if apt.status == 'done' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold 
+                                                bg-green-500 text-white shadow-sm">
                                         Selesai
                                     </span>
 
-                                {% elif apt.status == 'On Going' %}
-                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-yellow-400 text-yellow-900 border border-yellow-500 shadow-sm animate-pulse">
+                                {% elif apt.status == 'ongoing' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold 
+                                                bg-yellow-400 text-yellow-900 shadow-sm animate-pulse">
                                         On Going
                                     </span>
 
-                                {% elif apt.status == 'Terjadwal' %}
-                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-red-500 text-white border border-red-600 shadow-sm">
+                                {% elif apt.status == 'waiting' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold 
+                                                bg-red-500 text-white shadow-sm">
                                         Terjadwal
                                     </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold 
+                                                bg-gray-300 text-gray-700 shadow-sm">
+                                        Unknown
+                                    </span>
                                 {% endif %}
-
                             </td>
+
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                
-                                {% if apt.status == 'Terjadwal' %}
-                                    <button disabled class="w-full bg-gray-100 text-gray-400 border border-gray-200 px-4 py-2 rounded-lg cursor-not-allowed text-xs font-semibold">
+
+                                {% if apt.status == 'waiting' %}
+                                    <button disabled
+                                        class="w-full bg-gray-100 text-gray-400 border border-gray-200 
+                                            px-4 py-2 rounded-lg cursor-not-allowed text-xs font-semibold">
                                         Not Started
                                     </button>
-                                
-                                {% elif apt.status == 'On Going' %}
-                                    <a href="{{ url_for('input_rekam_medis', id=apt.id) }}" class="w-full inline-flex justify-center items-center px-4 py-2 rounded-lg shadow-md text-xs font-bold text-white bg-navy-800 hover:bg-navy-900 hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+
+                                {% elif apt.status == 'ongoing' %}
+                                    <a href="{{ url_for('input_rekam_medis', id=apt.id) }}"
+                                    class="w-full inline-flex justify-center items-center px-4 py-2 rounded-lg 
+                                            shadow-md text-xs font-bold text-white bg-navy-800 
+                                            hover:bg-navy-900 transition-all">
                                         <i class="fas fa-edit mr-2"></i> Input Record
                                     </a>
 
-                                {% elif apt.status == 'Selesai' %}
-                                    <a href="{{ url_for('dokter_pasien_detail', id_pasien=apt.pasien_id, id_appt=apt.id) }}" 
-                                        class="w-full inline-flex justify-center items-center px-4 py-2 border border-navy-600 rounded-lg shadow-sm text-xs font-bold text-navy-800 bg-white hover:bg-navy-100 transition-colors">
-                                    History
-                                     </a>
+                                {% elif apt.status == 'done' %}
+                                    <a href="{{ url_for('dokter_pasien_detail', id_pasien=apt.pasien_id, id_appt=apt.id) }}"
+                                    class="w-full inline-flex justify-center items-center px-4 py-2 
+                                            border border-navy-600 rounded-lg shadow-sm 
+                                            text-xs font-bold text-navy-800 bg-white hover:bg-navy-100 transition-colors">
+                                        History
+                                    </a>
                                 {% endif %}
 
                             </td>

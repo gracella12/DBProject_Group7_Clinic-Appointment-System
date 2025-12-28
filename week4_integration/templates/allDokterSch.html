@@ -2,64 +2,50 @@
 {% block content %}
 
 <section class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-white">
-
-  <!-- Header -->
-  <div class="mb-14 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+  <div class="mb-14 flex flex-col md:flex-row md:items-end md:justify-between gap-6 mt-12">
     <div>
       <a href="{{ url_for('home') }}"
          class="inline-flex items-center gap-2 text-sm text-[#7DA0CA] hover:text-white mb-3">
         ← Back to Home
       </a>
-      <h2 class="text-3xl font-bold">Doctor Schedules</h2>
-      <p class="text-[#7DA0CA] mt-2">Browse all available schedules from our doctors</p>
+      <h2 class="text-3xl font-bold mt-2">Doctor Schedules</h2>
+      <p class="text-[#7DA0CA] mt-2">
+        Browse all available schedules from our doctors
+      </p>
     </div>
   </div>
 
   {% if jadwal_list %}
-  <!-- Grid -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-6 mb-6">
 
-    {% for j in jadwal_list %}
+    {% for dokter_id, items in jadwal_list|groupby('dokter_id') %}
     <div
       class="bg-[#161B22] rounded-3xl p-6 border border-white/10
              hover:border-[#2F80ED]/60 transition-all duration-300
              hover:shadow-lg hover:shadow-blue-500/10 flex flex-col">
 
       <!-- Doctor Info -->
-      <div class="mb-4">
+      <div class="mb-5">
         <h3 class="text-xl font-bold text-white">
-          Dr. {{ j.nama_depan }} {{ j.nama_belakang }}
+          Dr. {{ items[0].nama_depan }} {{ items[0].nama_belakang }}
         </h3>
         <p class="text-[#7DA0CA] text-sm">Doctor</p>
       </div>
 
-      <!-- Schedule -->
+      <!-- Schedules -->
       <div class="flex-1 space-y-3 text-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-gray-400">Day</span>
-          <span class="font-semibold text-white">{{ j.hari }}</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-gray-400">Time</span>
+        {% for j in items %}
+        <div class="flex items-center justify-between border-b border-white/5 pb-2">
           <span class="font-semibold text-white">
+            {{ j.hari }}
+          </span>
+          <span class="text-gray-300">
             {{ j.jam_mulai }} - {{ j.jam_selesai }}
           </span>
         </div>
+        {% endfor %}
       </div>
 
-      <!-- Action -->
-      <a href="{{ url_for('view_jadwal_dokter', id=j.dokter_id) }}"
-         class="mt-6 inline-flex items-center justify-center gap-2
-                w-full py-3 rounded-full border border-[#2F80ED]
-                text-[#2F80ED] font-semibold
-                hover:bg-[#2F80ED] hover:text-white transition group">
-        Book with this Doctor
-        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1"
-             fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-        </svg>
-      </a>
     </div>
     {% endfor %}
 

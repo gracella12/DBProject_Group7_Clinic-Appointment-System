@@ -138,36 +138,28 @@
       ‹
     </button>
 
-    <!-- Scroll Area -->
     <div id="doctor-scroll"
       class="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide">
 
       {% if dokter_list %}
         {% for doctor in dokter_list %}
-        <div
-          class="group flex-none w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]
-                 bg-[#161B22] rounded-3xl p-5 border border-white/10
-                 hover:border-[#2F80ED]/60 transition-all duration-300 flex flex-col">
-
-          <!-- Photo -->
+        <div class="group flex-none w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-[#161B22] rounded-3xl p-5 border border-white/10 hover:border-[#2F80ED]/60 transition-all duration-300 flex flex-col">
           <div class="h-64 rounded-2xl overflow-hidden mb-5 bg-gray-800">
-            {% set foto_file = doctor[5] if doctor[5] else 'default.jpg' %}
+            {% set foto_file = doctor.foto if doctor.foto else 'default.jpg' %}
+            
             <img src="{{ url_for('static', filename='images/' ~ foto_file) }}"
                  class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                 alt="Dr. {{ doctor[1] }}"
+                 alt="Dr. {{ doctor.nama_depan }}"
                  onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default.jpg') }}';">
           </div>
 
-          <!-- Info -->
           <div class="flex-1 flex flex-col">
             <h3 class="text-xl font-bold text-white mb-1">
-              Dr. {{ doctor[1] }} {{ doctor[2] }}
+              Dr. {{ doctor.nama_depan }} {{ doctor.nama_belakang }}
             </h3>
-            <p class="text-[#7DA0CA] text-sm mb-1">{{ doctor[3] }}</p>
+            <p class="text-[#7DA0CA] text-sm mb-1">{{ doctor.spesialisasi }}</p>
             <p class="text-gray-500 text-xs mb-6">10 years experience</p>
-
-            <!-- Button -->
-            <a href="{{ url_for('view_jadwal_dokter', id=doctor[0]) }}"
+            <a href="{{ url_for('booking_home') }}"
                class="mt-auto inline-flex items-center justify-center gap-2
                       w-full py-3 rounded-full border border-[#2F80ED]
                       text-[#2F80ED] font-semibold
@@ -189,34 +181,8 @@
       {% endif %}
 
     </div>
-
-    <!-- Next Button -->
-    <button id="btn-next"
-      class="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full
-             bg-[#161B22] border border-white/10 text-[#2F80ED]
-             flex items-center justify-center hover:bg-[#2F80ED] hover:text-white
-             transition hidden md:flex">
-      ›
-    </button>
-
   </div>
 </section>
-
-<!-- Slider Script -->
-<script>
-  const container = document.getElementById('doctor-scroll');
-  const nextBtn = document.getElementById('btn-next');
-  const prevBtn = document.getElementById('btn-prev');
-
-  nextBtn.addEventListener('click', () => {
-    container.scrollBy({ left: container.clientWidth, behavior: 'smooth' });
-  });
-
-  prevBtn.addEventListener('click', () => {
-    container.scrollBy({ left: -container.clientWidth, behavior: 'smooth' });
-  });
-</script>
-
 
     <section class="py-20 bg-[#161B22]/30 border-y border-[#5483B3]/10 pt-20">
         <div class="max-w-7xl mx-auto px-4 text-center mb-16">

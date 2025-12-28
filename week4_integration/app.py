@@ -5,7 +5,7 @@ from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from MySQLdb.cursors import DictCursor 
 
 load_dotenv()
@@ -75,11 +75,11 @@ def login():
         pasien = cur.fetchone()
         
         if pasien:
-            # Pasien: Menggunakan check_password_hash karena didaftarkan melalui form /register
             if check_password_hash(pasien[2], pwd):
                 session['email'] = pasien[1]
                 session['role'] = 'pasien'
-                session['id'] = pasien[0]
+                session['pasien_id'] = pasien[0] 
+
                 cur.close()
                 flash('Login successful!', 'success')
                 return redirect(url_for('home')) 
@@ -464,30 +464,22 @@ def delete_resepsionis(id):
     return redirect(url_for('display_resepsionis'))
 
 # Modul Jadwal Dokter
+@app.route('/schedules')
+def all_schedules():
+    cur = mysql.connection.cursor(DictCursor)
+    cur.execute("""
+        SELECT 
+            j.jadwal_id, j.hari, j.jam_mulai, j.jam_selesai,
+            d.dokter_id, d.nama_depan, d.nama_belakang
+        FROM Jadwal_dokter j
+        JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
+        JOIN Dokter d ON dj.dokter_id = d.dokter_id
+        ORDER BY d.nama_depan, j.hari, j.jam_mulai
+    """)
+    jadwal_list = cur.fetchall()
+    cur.close()
 
-@app.route('/jadwal')
-def display_jadwal():
-    if 'email' not in session:
-        flash('Please login first.', 'error')
-        return redirect(url_for('login'))
-    
-    try:
-        cur = mysql.connection.cursor()
-        # JOIN untuk mendapatkan informasi dokter
-        cur.execute("""
-            SELECT j.jadwal_id, j.hari, j.jam_mulai, j.jam_selesai, 
-                   d.dokter_id, d.nama_depan, d.nama_belakang
-            FROM Jadwal_dokter j
-            JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
-            JOIN Dokter d ON dj.dokter_id = d.dokter_id
-            ORDER BY j.jadwal_id
-        """)
-        data = cur.fetchall()
-        cur.close()
-        return render_template('jadwalDokter.html', jadwal_list=data)
-    except Exception as e:
-        flash(f'Error: {str(e)}', 'error')
-        return redirect(url_for('home'))
+    return render_template('allDokterSch.html', jadwal_list=jadwal_list)
 
 @app.route('/jadwal/delete/<int:id>')
 def delete_jadwal(id):
@@ -556,135 +548,127 @@ def edit_jadwal(id):
     return render_template('editJadwalDokter.html', jadwal=jadwal, dokter_list=dokter_list)
 
 #Modul appoinment
-HARI_MAP = {
-    'Monday': 'Senin', 'Tuesday': 'Selasa', 'Wednesday': 'Rabu', 
-    'Thursday': 'Kamis', 'Friday': 'Jumat', 'Saturday': 'Sabtu', 'Sunday': 'Minggu'
-}
+@app.route('/jadwal', methods=['GET'])
+def display_jadwal():
+    if 'email' not in session:
+        flash('Please login first.', 'error')
+        return redirect(url_for('login'))
 
-@app.route('/booking', methods=['GET', 'POST'])
-def book_appointment_form():
-    print("--- DEBUG: Mengakses Halaman Booking ---")
+    try:
+        cur = mysql.connection.cursor(DictCursor)
+        cur.execute("""
+            SELECT j.jadwal_id, j.hari,
+                   TIME_FORMAT(j.jam_mulai, '%H:%i') AS jam_mulai,
+                   TIME_FORMAT(j.jam_selesai, '%H:%i') AS jam_selesai,
+                   d.dokter_id, d.nama_depan, d.nama_belakang
+            FROM Jadwal_dokter j
+            JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
+            JOIN Dokter d ON dj.dokter_id = d.dokter_id
+            ORDER BY d.nama_depan, j.hari, j.jam_mulai
+        """)
+        jadwal_list = cur.fetchall()
 
-    pasien_id = session.get('id')
+        # ambil semua dokter buat dropdown
+        cur.execute("SELECT * FROM Dokter")
+        dokter_list = cur.fetchall()
 
-    if not pasien_id:
-        print("DEBUG: User tidak login. Mencari ID Pasien dummy...")
-        try:
-            cur = mysql.connection.cursor()
-            cur.execute("SELECT pasien_id FROM Pasien LIMIT 1")
-            dummy = cur.fetchone()
-            cur.close()
+        cur.close()
 
-            if dummy:
-                pasien_id = dummy[0]
-            else:
-                flash("Tidak ada data pasien untuk testing.", "error")
-                return redirect(url_for('home'))
-        except Exception as e:
-            return f"<h1>Error DB:</h1><p>{e}</p>"
+        return render_template(
+            'bookAppointment.html',
+            jadwal_list=jadwal_list,
+            dokter_list=dokter_list
+        )
 
-    # =======================
-    # GET → TAMPILKAN FORM
-    # =======================
-    if request.method == 'GET':
-        try:
-            cur = mysql.connection.cursor(DictCursor)
+    except Exception as e:
+        print("ERROR /jadwal:", e)
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('home'))
 
-            cur.execute("SELECT dokter_id, nama_depan, nama_belakang FROM Dokter")
-            dokter_list = cur.fetchall()
 
-            cur.execute("""
-                SELECT 
-                    j.jadwal_id, j.hari, j.jam_mulai, j.jam_selesai,
-                    d.dokter_id, d.nama_depan, d.nama_belakang
-                FROM Jadwal_dokter j
-                JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
-                JOIN Dokter d ON dj.dokter_id = d.dokter_id
-            """)
-            jadwal_list = cur.fetchall()
-            cur.close()
+@app.route('/booking')
+def booking_home():
+    try:
+        cur = mysql.connection.cursor(DictCursor)
 
-            return render_template(
-                'bookAppointment.html',
-                dokter_list=dokter_list,
-                jadwal_list=jadwal_list
-            )
+        # ambil dokter
+        cur.execute("SELECT * FROM Dokter")
+        dokter_list = cur.fetchall()
 
-        except Exception as e:
-            return f"<h1>Error GET:</h1><p>{e}</p>"
+        # ambil jadwal (SAMA seperti di /jadwal)
+        cur.execute("""
+            SELECT j.jadwal_id, j.hari,
+                   TIME_FORMAT(j.jam_mulai, '%H:%i') AS jam_mulai,
+                   TIME_FORMAT(j.jam_selesai, '%H:%i') AS jam_selesai,
+                   d.dokter_id
+            FROM Jadwal_dokter j
+            JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
+            JOIN Dokter d ON dj.dokter_id = d.dokter_id
+        """)
+        jadwal_list = cur.fetchall()
 
-    if request.method == 'POST':
-        print("DEBUG: Proses POST Booking...")
+        cur.close()
 
-        dokter_id = request.form.get('dokter_id')
-        tanggal = request.form.get('date')   # dari FE
-        waktu = request.form.get('time')     # dari FE
+        return render_template(
+            'bookingPage.html',
+            dokter_list=dokter_list,
+            jadwal_list=jadwal_list  
+        )
 
-        if not dokter_id or not tanggal or not waktu:
-            flash("Mohon pilih dokter, tanggal, dan jam.", "warning")
-            return redirect(url_for('book_appointment_form'))
+    except Exception as e:
+        print("ERROR /booking:", e)
+        return f"Error: {e}"
+    
+@app.route('/booking/submit', methods=['POST'])
+def booking_submit():
+    pasien_id = session.get('pasien_id')
 
-        try:
-            cur = mysql.connection.cursor(DictCursor)
+    dokter_id = request.form.get('dokter_id')
+    tanggal   = request.form.get('date')
+    waktu     = request.form.get('time')
 
-            # Ambil hari dari tanggal
-            hari = datetime.strptime(tanggal, "%Y-%m-%d").strftime("%A")
+    if not dokter_id or not tanggal or not waktu:
+        flash("Mohon lengkapi data.", "warning")
+        return redirect(url_for('booking_home'))
 
-            # Mapping ke DB (kalau DB pakai Indo)
-            hari_map = {
-                "Monday": "Senin",
-                "Tuesday": "Selasa",
-                "Wednesday": "Rabu",
-                "Thursday": "Kamis",
-                "Friday": "Jumat",
-                "Saturday": "Sabtu",
-                "Sunday": "Minggu"
-            }
-            hari_db = hari_map.get(hari, hari)
+    try:
+        cur = mysql.connection.cursor(DictCursor)
 
-            # Cari jadwal_id yang cocok
-            cur.execute("""
-                SELECT j.jadwal_id, j.jam_mulai
-                FROM Jadwal_dokter j
-                JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
-                WHERE dj.dokter_id = %s AND j.hari = %s AND j.jam_mulai = %s
-            """, (dokter_id, hari_db, waktu))
+        hari_name = datetime.strptime(tanggal, "%Y-%m-%d").strftime("%A")
 
-            jadwal = cur.fetchone()
+        cur.execute("""
+            SELECT j.jadwal_id
+            FROM Jadwal_dokter j
+            JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
+            WHERE dj.dokter_id = %s
+              AND j.hari = %s
+              AND j.jam_mulai <= %s
+              AND j.jam_selesai > %s
+            LIMIT 1
+        """, (dokter_id, hari_name, waktu, waktu))
 
-            if not jadwal:
-                flash("Jadwal dokter tidak ditemukan.", "error")
-                return redirect(url_for('book_appointment_form'))
+        jadwal = cur.fetchone()
+        if not jadwal:
+            flash("Jadwal tidak tersedia.", "error")
+            return redirect(url_for('booking_home'))
 
-            jadwal_id = jadwal['jadwal_id']
-            jam_mulai = jadwal['jam_mulai']
+        cur.execute("""
+            INSERT INTO Appointment
+            (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status)
+            VALUES (%s, %s, %s, %s, %s, 'waiting')
+        """, (pasien_id, dokter_id, jadwal['jadwal_id'], tanggal, waktu))
 
-            # Cek double booking
-            cur.execute("""
-                SELECT appointment_id FROM Appointment
-                WHERE dokter_id = %s AND tanggal = %s AND waktu = %s AND status != 'cancelled'
-            """, (dokter_id, tanggal, jam_mulai))
+        mysql.connection.commit()
+        cur.close()
 
-            if cur.fetchone():
-                flash("Slot ini sudah dibooking.", "warning")
-                return redirect(url_for('book_appointment_form'))
+        flash("Booking berhasil!", "success")
+        return redirect(url_for('home'))
 
-            # Insert
-            cur.execute("""
-                INSERT INTO Appointment
-                (pasien_id, dokter_id, jadwal_id, tanggal, waktu, status)
-                VALUES (%s, %s, %s, %s, %s, 'waiting')
-            """, (pasien_id, dokter_id, jadwal_id, tanggal, jam_mulai))
-
-            mysql.connection.commit()
-            cur.close()
-
-            flash("Booking berhasil!", "success")
-            return redirect(url_for('home'))
-
-        except Exception as e:
-            mysql.connection.rollback()
-            return f"<h1>Error POST:</h1><p>{e}</p>"
+    except Exception as e:
+        mysql.connection.rollback()
+        print("ERROR submit booking:", e)
+        flash("Terjadi kesalahan.", "error")
+        return redirect(url_for('booking_home'))
 
 # 2. ROUTE DELETE APPOINTMENT (FIXED)
 @app.route('/appointment/delete/<int:id>')
@@ -998,19 +982,31 @@ def dokter_dashboard():
     stats['upcoming_appointments'] = cur.fetchone()['total']
 
     #Jadwal Dokter
-    query_jadwal = """
-        SELECT 
-            j.hari, 
-            j.jam_mulai, 
-            j.jam_selesai 
+    day_map = {
+            'Senin': 'Monday', 'Selasa': 'Tuesday', 'Rabu': 'Wednesday',
+            'Kamis': 'Thursday', 'Jumat': 'Friday', 'Sabtu': 'Saturday', 'Minggu': 'Sunday'
+        }
+
+    # Jadwal Dokter (Untuk Dashboard)
+    cur.execute("""
+        SELECT j.hari, j.jam_mulai, j.jam_selesai 
         FROM Jadwal_dokter j
         JOIN Dijadwalkan d ON j.jadwal_id = d.jadwal_id
         WHERE d.dokter_id = %s
         GROUP BY j.hari, j.jam_mulai, j.jam_selesai
         ORDER BY FIELD(j.hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'), j.jam_mulai
-    """
-    cur.execute(query_jadwal, (dokter_id_session,))
-    jadwal_saya = cur.fetchall()
+    """, (dokter_id_session,))
+    raw_jadwal_saya = cur.fetchall()
+
+    # Translate jadwal_saya
+    jadwal_saya = []
+    if raw_jadwal_saya:
+        for item in raw_jadwal_saya:
+            # Copy dict agar aman dimodifikasi
+            new_item = item.copy()
+            # Ganti hari Indo jadi Inggris
+            new_item['hari'] = day_map.get(item['hari'], item['hari'])
+            jadwal_saya.append(new_item)
 
     #Appointment Hari Ini
     query_appt = """
@@ -1065,7 +1061,7 @@ def view_jadwal_dokter():
     dokter_id_session = session.get('id')
     cur = mysql.connection.cursor()
     
-    # Query tetap sama
+    # Query tetap sama (masih pakai sorting Indo)
     query = """
         SELECT jd.jadwal_id, jd.hari, jd.jam_mulai, jd.jam_selesai
         FROM Jadwal_dokter jd
@@ -1077,13 +1073,23 @@ def view_jadwal_dokter():
     jadwal_data = cur.fetchall()
     cur.close()
 
+    # Kamus Translate
+    day_map = {
+        'Senin': 'Monday', 'Selasa': 'Tuesday', 'Rabu': 'Wednesday',
+        'Kamis': 'Thursday', 'Jumat': 'Friday', 'Sabtu': 'Saturday', 'Minggu': 'Sunday'
+    }
+
     jadwal_list = []
     if jadwal_data:
         for row in jadwal_data:
+            # row[1] adalah kolom 'hari' dari database (Indo)
+            indo_day = row[1]
+            english_day = day_map.get(indo_day, indo_day)
+
             jadwal_list.append({
                 'jadwal_id': row[0],       
-                'hari': row[1],            
-                'jam_mulai': str(row[2]),  
+                'hari': english_day,        # Output Inggris ke HTML
+                'jam_mulai': str(row[2]),   
                 'jam_selesai': str(row[3]) 
             })
 
@@ -1091,23 +1097,40 @@ def view_jadwal_dokter():
 ################################################################
 @app.route('/dokter/jadwal/add', methods=['POST'])
 def dokter_add_jadwal():
-
     cur = mysql.connection.cursor()
-    dokter_id_session = session.get('id')
+    dokter_id_session = session.get('dokter_id') or session.get('id')
+
+    if not dokter_id_session:
+        flash("Session dokter tidak ditemukan. Silakan login ulang.", "error")
+        return redirect(url_for('login'))
 
     if request.method == 'POST':
-        hari = request.form['hari']
+        hari_input = request.form['hari']   # contoh: "Jumat"
         jam_mulai = request.form['jam_mulai']
         jam_selesai = request.form['jam_selesai']
+
+        # ✅ Mapping Indo -> English
+        day_map = {
+            'Senin': 'Monday',
+            'Selasa': 'Tuesday',
+            'Rabu': 'Wednesday',
+            'Kamis': 'Thursday',
+            'Jumat': 'Friday',
+            'Sabtu': 'Saturday',
+            'Minggu': 'Sunday'
+        }
+
+        # Konversi, kalau sudah English biarkan
+        hari_db = day_map.get(hari_input, hari_input)
 
         try:
             cur.execute("""
                 INSERT INTO Jadwal_dokter (hari, jam_mulai, jam_selesai)
                 VALUES (%s, %s, %s)
-            """, (hari, jam_mulai, jam_selesai))
+            """, (hari_db, jam_mulai, jam_selesai))
+
             jadwal_id = cur.lastrowid  
 
-            # Insert ke Dijadwalkan
             cur.execute("""
                 INSERT INTO Dijadwalkan (dokter_id, jadwal_id)
                 VALUES (%s, %s)
@@ -1117,12 +1140,13 @@ def dokter_add_jadwal():
             cur.close()
 
             flash('Jadwal berhasil ditambahkan!', 'success')
-            return redirect(url_for('dokter_homepage'))
+            return redirect(url_for('dokter_dashboard'))
 
         except Exception as e:
             mysql.connection.rollback()
+            cur.close()
             flash(f'Error menambahkan jadwal: {str(e)}', 'error')
-    
+
     return redirect(url_for('dokter_dashboard'))
 
 @app.route('/dokter/jadwal/delete', methods=['POST'])
@@ -1458,23 +1482,6 @@ def dokter_edit_profile():
             cur.close()
             flash(f'Error updating profile: {str(e)}', 'error')
             return redirect(url_for('dokter_edit_profile'))
-        
-@app.route('/schedules')
-def all_schedules():
-    cur = mysql.connection.cursor(DictCursor)
-    cur.execute("""
-        SELECT 
-            j.jadwal_id, j.hari, j.jam_mulai, j.jam_selesai,
-            d.dokter_id, d.nama_depan, d.nama_belakang
-        FROM Jadwal_dokter j
-        JOIN Dijadwalkan dj ON j.jadwal_id = dj.jadwal_id
-        JOIN Dokter d ON dj.dokter_id = d.dokter_id
-        ORDER BY d.nama_depan, j.hari, j.jam_mulai
-    """)
-    jadwal_list = cur.fetchall()
-    cur.close()
-
-    return render_template('allDokterSch.html', jadwal_list=jadwal_list)
 
 if __name__ == '__main__':
     app.run(debug=True)
