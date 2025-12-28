@@ -84,6 +84,9 @@ Proyek ini menggunakan basis data relasional **MySQL** yang telah dinormalisasi 
 ---
 
 ## <a id="cara-menjalankan"></a>⚙️ Cara Menjalankan
+### Link Deploy
+- Anda bisa mengakses projek ini pada link berikut: `https://proyekbasisdata-koma2025-d8ad.vercel.app`.
+- Jika anda ingin install projek ini, maka ikutilah langkah di bawah.
 
 ### 1. Clone Repository
 ```bash
@@ -92,6 +95,7 @@ cd DBProject_Group7_Clinic-Appointment-System/week4_integration
 ```
 
 ### 2. Setup Virtual Environment 
+Change directory ke folder week4_integration dan ketikkan command ini di terminal:
 ```bash
 # Windows
 python -m venv venv
@@ -107,6 +111,7 @@ pip install -r requirements.txt
 ```
 
 ### 4. Konfigurasi Database
+Buat file .env di dalam folder week4_integration dan masukkan kode di bawah ini:
 ```bash
 Aplikasi ini menggunakan *Environment Variables* untuk keamanan.
 
@@ -128,6 +133,10 @@ MYSQL_PORT=3306
 python3 app.py
 #Windows
 python app.py
+```
+Jika error, maka pakai command ini:
+```bash
+python3 app.py
 ```
 ---
 

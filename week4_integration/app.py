@@ -1,12 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, g, current_app
 import pymysql
+# Melakukan simulasi agar library lain menganggap pymysql sebagai MySQLdb
 pymysql.install_as_MySQLdb()
-from flask_mysqldb import MySQL
-from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
 from datetime import date, datetime, timedelta
-from MySQLdb.cursors import DictCursor 
+# Import DictCursor dari pymysql langsung
+from pymysql.cursors import DictCursor 
 
 load_dotenv()
 
@@ -19,6 +19,30 @@ app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
 
+class MySQL:
+    def __init__(self, app=None):
+        if app is not None:
+            self.init_app(app)
+
+    def init_app(self, app):
+        @app.teardown_appcontext
+        def close_db(error):
+            db = g.pop('db', None)
+            if db is not None:
+                db.close()
+
+    @property
+    def connection(self):
+        if 'db' not in g:
+            g.db = pymysql.connect(
+                host=current_app.config['MYSQL_HOST'],
+                user=current_app.config['MYSQL_USER'],
+                password=current_app.config['MYSQL_PASSWORD'],
+                database=current_app.config['MYSQL_DB'],
+                port=current_app.config['MYSQL_PORT'],
+                autocommit=True
+            )
+        return g.db
 
 mysql = MySQL(app)
 
@@ -33,32 +57,25 @@ def home():
         role = session.get('role')
         
         if role == 'resepsionis':
-            # KHUSUS RESEPSIONIS: Pindah ke Dashboard Baru
             return redirect(url_for('homepageResepsionis'))
             
         elif role == 'dokter':
-            # KHUSUS DOKTER: Pindah ke dashboard dokter (backend view)
             return redirect(url_for('dokter_dashboard'))
             
         elif role == 'pasien':
-            # PASIEN: Tetap di halaman utama tapi mode login
             cur = mysql.connection.cursor()
-            # Ambil nama depan pasien
             cur.execute("SELECT nama_depan FROM Pasien WHERE pasien_id = %s", (session.get('id'),))
             pasien_nama = cur.fetchone()
             cur.close()
             
             if pasien_nama:
-                # Set nama depan pasien ke session, menimpa nama dokter yang tersisa
                 session['nama_depan'] = pasien_nama[0]
 
             return render_template('home.html', email=session['email'], doctors=doctors)  
             
-        # Default jika role tidak dikenali
         return render_template('home.html', email=session['email'], doctors=doctors)
     
     else:   
-        # Jika belum login (Tamu)
         return render_template('home.html', doctors=doctors)
     
 
@@ -692,7 +709,9 @@ def booking_submit():
         flash("Terjadi kesalahan.", "error")
         return redirect(url_for('booking_home'))
 
-# 2. ROUTE DELETE APPOINTMENT (FIXED)
+# ---------------------------------------------------
+# 2. ROUTE DELETE APPOINTMENT 
+# ---------------------------------------------------
 @app.route('/appointment/delete/<int:id>')
 def delete_appointment(id):
     # Cek login
@@ -1366,8 +1385,6 @@ def dokter_pasien_detail(id_pasien, id_appt):
         'status': appointment_data['status'],
         'tgl_periksa': appointment_data['tanggal_cantik'],
         'waktu': appointment_data['waktu_cantik'],
-
-        # 👉 Ambil dari DB, kalau None baru pakai default
         'diagnosis': appointment_data['diagnosis'] or 'Belum Diperiksa',
         'deskripsi': appointment_data['description'] or 'Silakan input rekam medis baru.'
     }
