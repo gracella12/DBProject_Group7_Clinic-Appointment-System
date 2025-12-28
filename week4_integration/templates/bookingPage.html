@@ -1,0 +1,145 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="min-h-screen py-16 px-4 flex items-center justify-center">
+  
+  <div class="w-full max-w-2xl bg-[#0B0E14] border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+    
+    <div class="absolute top-0 right-0 w-64 h-64 bg-[#2F80ED]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+
+    <div class="relative z-10">
+      <h2 class="text-3xl font-bold text-white mb-2">Book Appointment</h2>
+      <p class="text-[#7DA0CA] mb-8">Please fill in the form below to schedule your visit.</p>
+
+      <form method="POST" action="{{ url_for('booking_submit') }}" class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Select Doctor</label>
+          <div class="relative">
+            <select name="dokter_id" id="doctor_select" required
+              class="w-full bg-[#161B22] border border-white/10 text-white rounded-xl px-4 py-3 appearance-none focus:outline-none focus:border-[#2F80ED] focus:ring-1 focus:ring-[#2F80ED] transition-colors">
+              <option value="" disabled selected>-- Choose a Specialist --</option>
+              {% for doc in dokter_list %}
+              <option value="{{ doc.dokter_id }}">Dr. {{ doc.nama_depan }} {{ doc.nama_belakang }}</option>
+              {% endfor %}
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Select Date</label>
+          <input type="date" name="date" id="date_input" required
+            class="w-full bg-[#161B22] border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-[#2F80ED] focus:ring-1 focus:ring-[#2F80ED] transition-colors"
+            style="color-scheme: dark;"> </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Available Time Slots</label>
+          <div class="relative">
+            <select name="time" id="time_select" required disabled
+              class="w-full bg-[#161B22] border border-white/10 text-gray-500 rounded-xl px-4 py-3 appearance-none focus:outline-none focus:border-[#2F80ED] disabled:bg-opacity-50 disabled:cursor-not-allowed transition-colors">
+              <option value="">Please select doctor & date first</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+          </div>
+          <p id="schedule_info" class="text-xs text-[#2F80ED] mt-2 hidden"></p>
+        </div>
+
+        <div class="pt-4">
+          <button type="submit"
+            class="w-full bg-[#2F80ED] hover:bg-blue-600 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/25 transform hover:-translate-y-1">
+            Confirm Booking
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 1. Ambil data jadwal dari Python
+  const allSchedules = {{ jadwal_list | default([]) | tojson }};
+
+  const doctorSelect = document.getElementById('doctor_select');
+  const dateInput = document.getElementById('date_input');
+  const timeSelect = document.getElementById('time_select');
+  const infoText = document.getElementById('schedule_info');
+
+  // Set minimum date hari ini
+  dateInput.min = new Date().toISOString().split("T")[0];
+
+  // Fungsi Update Jam
+  function updateTimeSlots() {
+    const docId = doctorSelect.value;
+    const dateVal = dateInput.value;
+
+    // Reset Dropdown Jam
+    timeSelect.innerHTML = '<option value="">-- Select Time --</option>';
+    timeSelect.disabled = true;
+    timeSelect.classList.add('text-gray-500');
+    timeSelect.classList.remove('text-white');
+    infoText.classList.add('hidden');
+
+    if (!docId || !dateVal) return;
+
+    const d = new Date(dateVal + 'T00:00:00');
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const dayName = days[d.getDay()];
+
+    // Cari jadwal yang cocok
+    const schedule = allSchedules.find(s =>
+    String(s.dokter_id) === String(docId) &&
+    s.hari.trim().toLowerCase() === dayName.trim().toLowerCase()
+   );
+
+    if (schedule) {
+      // Jadwal Ketemu -> Generate Opsi Jam
+      timeSelect.disabled = false;
+      timeSelect.classList.remove('text-gray-500');
+      timeSelect.classList.add('text-white');
+      
+      infoText.innerText = `${doctorSelect.options[doctorSelect.selectedIndex].text} is available on ${dayName} (${schedule.jam_mulai} - ${schedule.jam_selesai})`;
+      infoText.classList.remove('hidden');
+
+      // Loop generate jam per 30 menit
+      generateTimeOptions(schedule.jam_mulai, schedule.jam_selesai);
+    } else {
+      // Jadwal Tidak Ketemu
+      timeSelect.innerHTML = `<option value="">${doctorSelect.options[doctorSelect.selectedIndex].text} not available on ${dayName}</option>`;
+      infoText.innerText = "Please choose another date.";
+      infoText.classList.remove('hidden');
+      infoText.classList.replace('text-[#2F80ED]', 'text-red-500');
+    }
+  }
+
+  // Fungsi Generate Opsi <option>
+  function generateTimeOptions(startStr, endStr) {
+    let start = parseInt(startStr.split(':')[0]) * 60 + parseInt(startStr.split(':')[1]);
+    let end = parseInt(endStr.split(':')[0]) * 60 + parseInt(endStr.split(':')[1]);
+
+    while (start < end) {
+      let h = Math.floor(start / 60);
+      let m = start % 60;
+      // Format HH:MM
+      let label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      
+      let opt = document.createElement('option');
+      opt.value = label;
+      opt.innerText = label;
+      timeSelect.appendChild(opt);
+
+      start += 30; // Interval 30 menit
+    }
+  }
+
+  // Event Listeners
+  doctorSelect.addEventListener('change', updateTimeSlots);
+  dateInput.addEventListener('change', updateTimeSlots);
+
+</script>
+
+{% endblock %}

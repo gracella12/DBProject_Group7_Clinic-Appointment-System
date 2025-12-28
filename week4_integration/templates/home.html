@@ -76,7 +76,7 @@
                         <h3 class="text-2xl font-bold text-white mb-2">Book Appointment</h3>
                         <p class="text-[#7DA0CA] max-w-sm">Schedule a visit with our doctors easily. No more waiting in lines.</p>
                     </div>
-                    <a href="{{ url_for('book_appointment_form') }}" class="inline-flex items-center gap-2 text-white font-semibold group-hover:gap-4 transition-all mt-6">
+                    <a href="{{ url_for('display_jadwal') }}" class="inline-flex items-center gap-2 text-white font-semibold group-hover:gap-4 transition-all mt-6">
                         Book Now <span class="bg-white text-black rounded-full p-1"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></span>
                     </a>
                 </div>
@@ -97,7 +97,7 @@
                     <svg class="w-10 h-10 text-[#021024]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <h3 class="text-xl font-bold text-white">Check Schedule</h3>
-                <a href="{{ url_for('display_jadwal') }}" class="text-[#5483B3] text-sm mt-2 hover:underline">View Timetable</a>
+                <a href="{{ url_for('all_schedules') }}" class="text-[#5483B3] text-sm mt-2 hover:underline">View Timetable</a>
             </div>
 
             <div class="md:col-span-2 row-span-1 bg-gradient-to-br from-[#021024] to-[#161B22] rounded-[2rem] p-8 relative overflow-hidden border border-[#5483B3]/20 group">
