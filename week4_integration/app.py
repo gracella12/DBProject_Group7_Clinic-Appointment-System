@@ -1218,11 +1218,11 @@ def dokter_appointment_list():
         return redirect(url_for('login'))
 
     id_dokter = session.get('id')
-    
-    # 2. Ambil tanggal (Default hari ini)
+
+    # Ambil tanggal (?date=YYYY-MM-DD), default hari ini
     tanggal_pilih = request.args.get('date')
     if not tanggal_pilih:
-        tanggal_pilih = date.today()
+        tanggal_pilih = date.today().strftime("%Y-%m-%d")
 
     cur = mysql.connection.cursor()
 
@@ -1230,12 +1230,13 @@ def dokter_appointment_list():
         SELECT 
             a.appointment_id,                         
             a.waktu,                                   
-            CONCAT(p.nama_depan, ' ', p.nama_belakang), 
+            CONCAT(p.nama_depan, ' ', p.nama_belakang) AS nama_pasien,
             p.pasien_id,                              
             a.status                                   
         FROM Appointment a
         JOIN Pasien p ON a.pasien_id = p.pasien_id
-        WHERE a.dokter_id = %s AND a.tanggal = %s
+        WHERE a.dokter_id = %s 
+          AND a.tanggal = %s
         ORDER BY a.waktu ASC
     """
 
@@ -1244,21 +1245,44 @@ def dokter_appointment_list():
     cur.close()
 
     appointments_list = []
-    
-    if raw_appointments:
-        for row in raw_appointments:
-            appointments_list.append({
-                'id': row[0],             
-                'jam_janji': str(row[1]),
-                'nama_pasien': row[2],    
-                'no_rm': f"ID-{row[3]}",        
-                'pasien_id': row[3],      
-                'status': row[4]          
-            })
+
+    # Waktu sekarang
+    now = datetime.now().time()
+    today_str = date.today().strftime("%Y-%m-%d")
+
+    for row in raw_appointments:
+        waktu_db = row[1]   # bisa time atau string
+
+        # Konversi ke time object
+        if hasattr(waktu_db, "strftime"):
+            waktu_apt = waktu_db
+            jam_janji = waktu_db.strftime("%H:%M")
+        else:
+            waktu_apt = datetime.strptime(str(waktu_db), "%H:%M").time()
+            jam_janji = str(waktu_db)[:5]
+
+        status_db = row[4]
+
+        status_final = status_db
+
+        if tanggal_pilih == today_str and status_db != 'done':
+            if now < waktu_apt:
+                status_final = 'waiting'
+            elif now >= waktu_apt:
+                status_final = 'ongoing'
+
+        appointments_list.append({
+            'id': row[0],
+            'jam_janji': jam_janji,
+            'nama_pasien': row[2],
+            'no_rm': f"ID-{row[3]}",
+            'pasien_id': row[3],
+            'status': status_final
+        })
 
     return render_template(
-        'dokterAppointment.html', 
-        appointments=appointments_list, 
+        'dokterAppointment.html',
+        appointments=appointments_list,
         tanggal_hari_ini=tanggal_pilih
     )
 
