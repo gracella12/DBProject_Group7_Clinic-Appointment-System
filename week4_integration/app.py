@@ -19,7 +19,6 @@ app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
 
-# --- PENGGANTI Flask-MySQLdb UNTUK VERCEL ---
 class MySQL:
     def __init__(self, app=None):
         if app is not None:
@@ -46,7 +45,6 @@ class MySQL:
         return g.db
 
 mysql = MySQL(app)
-# --------------------------------------------
 
 @app.route('/')
 def home():
