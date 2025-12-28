@@ -90,6 +90,7 @@ cd Clinic-Appointment-System/week4_integration
 ```
 
 ### 2. Setup Virtual Environment 
+Change directory ke folder week4_integration dan ketikkan command ini di terminal:
 ```bash
 python -m venv venv
 # Windows
@@ -102,20 +103,29 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
-### 4. Konfigurasi Database
+Jika error, maka pakai command ini:
 ```bash
-Buka file `app.py`, cari bagian konfigurasi app.config, dan sesuaikan dengan kredensial MySQL lokal Anda:
-```python
-# app.py
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'masukkan_password_anda' 
-app.config['MYSQL_DB'] = 'clinic_system'
+pip3 install -r requirements.txt
+```
+
+### 4. Konfigurasi Database
+Buat file .env di dalam folder week4_integration dan masukkan kode di bawah ini:
+```bash
+# .env
+MYSQL_HOST=hopper.proxy.rlwy.net
+MYSQL_USER=root
+MYSQL_PASSWORD=FkprQHTlAIIMxRrArWiPcYhGmQoKJulU
+MYSQL_DB=railway
+MYSQL_PORT=15945
 ```
 
 ### 5. Jalankan Aplikasi
 ```bash
 python app.py
+```
+Jika error, maka pakai command ini:
+```bash
+python3 app.py
 ```
 ---
 
