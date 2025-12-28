@@ -3,7 +3,7 @@
 # 🏥 Clinic Appointment System
 **Sistem Informasi Manajemen Janji Temu Klinik Terintegrasi**
 
-[![Vercel](https://img.shields.io/badge/Vercel-Visit%20Live%20Site-black?style=for-the-badge&logo=vercel&logoColor=white)](https://proyekbasisdata-koma2025-d8ad.vercel.app)
+[![Vercel](https://img.shields.io/badge/Vercel-Visit%20Live%20Site-A5B4FC?style=for-the-badge&logo=vercel&logoColor=white)](https://proyekbasisdata-koma2025-d8ad.vercel.app)
 
 <p align="center">
   <a href="#gambaran-umum">Gambaran Umum</a> •
@@ -85,8 +85,8 @@ Proyek ini menggunakan basis data relasional **MySQL** yang telah dinormalisasi 
 
 ## <a id="cara-menjalankan"></a>⚙️ Cara Menjalankan
 ### Link Deploy
-- Anda bisa mengakses projek ini pada link berikut: `https://proyekbasisdata-koma2025-d8ad.vercel.app`.
-- Jika anda ingin install projek ini, maka ikutilah langkah di bawah.
+- Proyek dapat diakses pada *link* berikut: `https://proyekbasisdata-koma2025-d8ad.vercel.app`.
+- Apabila ingin *install* proyek, ikuti langkah berikut.
 
 ### 1. Clone Repository
 ```bash
@@ -95,7 +95,6 @@ cd DBProject_Group7_Clinic-Appointment-System/week4_integration
 ```
 
 ### 2. Setup Virtual Environment 
-Change directory ke folder week4_integration dan ketikkan command ini di terminal:
 ```bash
 # Windows
 python -m venv venv
@@ -111,15 +110,13 @@ pip install -r requirements.txt
 ```
 
 ### 4. Konfigurasi Database
-Buat file .env di dalam folder week4_integration dan masukkan kode di bawah ini:
-```bash
 Aplikasi ini menggunakan *Environment Variables* untuk keamanan.
 
 1. Buat file baru bernama `.env` di dalam folder `week4_integration`.
 2. Salin konfigurasi berikut ke dalam file `.env` tersebut:
 3. Sesuaikan `MYSQL_PASSWORD` dengan password database lokal Anda.
 
-```text
+```bash 
 MYSQL_HOST=localhost
 MYSQL_USER=root
 MYSQL_PASSWORD=masukkan_password_anda
@@ -133,10 +130,6 @@ MYSQL_PORT=3306
 python3 app.py
 #Windows
 python app.py
-```
-Jika error, maka pakai command ini:
-```bash
-python3 app.py
 ```
 ---
 
