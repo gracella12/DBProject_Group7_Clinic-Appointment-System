@@ -35,8 +35,6 @@ else:
         if os.path.exists(path):
             app.config['MYSQL_SSL_CA'] = path
             break
-
-app.config['MYSQL_SSL_DISABLED'] = False
 # ----------------------------------------
 
 class MySQL:
@@ -54,13 +52,26 @@ class MySQL:
     @property
     def connection(self):
         if 'db' not in g:
+            # 1. SIAPKAN TIKET SSL NYA
+            ssl_config = None
+            if current_app.config.get('MYSQL_SSL_CA'):
+                ssl_config = {'ca': current_app.config['MYSQL_SSL_CA']}
+            
+            # Khusus Cloud: Jika CA path ga ketemu tapi bukan Windows, 
+            # paksa SSL mode basic biar TiDB tidak menolak
+            if ssl_config is None and os.name != 'nt':
+                ssl_config = {'check_hostname': False, 'verify_mode': ssl.CERT_NONE}
+
+            # 2. MASUKKAN TIKETNYA KE SINI (parameter ssl=...)
             g.db = pymysql.connect(
                 host=current_app.config['MYSQL_HOST'],
                 user=current_app.config['MYSQL_USER'],
                 password=current_app.config['MYSQL_PASSWORD'],
                 database=current_app.config['MYSQL_DB'],
                 port=current_app.config['MYSQL_PORT'],
-                autocommit=True
+                autocommit=True,
+                cursorclass=DictCursor, # Biar data keluar sebagai dictionary
+                ssl=ssl_config  # <--- INI YANG TADI HILANG!
             )
         return g.db
 
