@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, g, current_app
+from werkzeug.security import generate_password_hash, check_password_hash
 import pymysql
 # Melakukan simulasi agar library lain menganggap pymysql sebagai MySQLdb
 pymysql.install_as_MySQLdb()
@@ -18,6 +19,9 @@ app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
 app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
+# Tambahan Khusus TiDB / Cloud Database
+app.config['MYSQL_SSL_CA'] = '/etc/ssl/cert.pem'
+app.config['MYSQL_SSL_DISABLED'] = False
 
 class MySQL:
     def __init__(self, app=None):
