@@ -4,6 +4,7 @@ import pymysql
 # Melakukan simulasi agar library lain menganggap pymysql sebagai MySQLdb
 pymysql.install_as_MySQLdb()
 import os
+import ssl
 from dotenv import load_dotenv
 from datetime import date, datetime, timedelta
 # Import DictCursor dari pymysql langsung
@@ -20,8 +21,23 @@ app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
 # Tambahan Khusus TiDB / Cloud Database
-app.config['MYSQL_SSL_CA'] = '/etc/ssl/cert.pem'
+if os.name == 'nt':  # Cek jika Windows (Laptopmu)
+    app.config['MYSQL_SSL_CA'] = None
+else:
+    # Cek jalur sertifikat untuk Linux (Vercel / Debian)
+    possible_paths = [
+        '/etc/pki/tls/certs/ca-bundle.crt', # Untuk Vercel (Amazon Linux)
+        '/etc/ssl/certs/ca-certificates.crt', # Untuk Debian/Ubuntu
+        '/etc/ssl/cert.pem'
+    ]
+    app.config['MYSQL_SSL_CA'] = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            app.config['MYSQL_SSL_CA'] = path
+            break
+
 app.config['MYSQL_SSL_DISABLED'] = False
+# ----------------------------------------
 
 class MySQL:
     def __init__(self, app=None):
